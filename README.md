@@ -11,9 +11,13 @@ A modular state-machine based character movement system. State machines are used
 ---
 ### Documentation
 
+[User Guide](Documentation/User%20Guide.md)
+
 **General:**
 * [Design Philosophy](Documentation/Design%20Philosophy.md)
 * [Layered State Machine Architecture](Documentation/Layered%20State%20Machine%20Architecture.md)
+* [Input](Documentation/Input.md)
+* [Parameters](Documentation/Parameters.md)
 
 **Default Movement:**
 * [Zaris-Style Movement](Documentation/Default/Zaris-Style%20Movement.md)
