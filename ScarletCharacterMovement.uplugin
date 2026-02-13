@@ -1,0 +1,24 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "ScarletCharacterMovement",
+	"Description": "A state-machine based movement system that dynamically controls Unreal's in-build character momvement component",
+	"Category": "Other",
+	"CreatedBy": "AkarFire / K Scarlet",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "ScarletCharacterMovement",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
+}
