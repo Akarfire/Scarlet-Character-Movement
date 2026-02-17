@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "STT_TimerController.h"
 #include "ScarletMovementComponent.generated.h"
 
 
@@ -28,6 +29,9 @@ protected:
 	// Character's movement component that needs to be controlled
 	class UCharacterMovementComponent* CharacterMovementComponent = nullptr;
 
+	// Scarlet_TimersAndTimelines integration
+	// Timer controller that handles custom timers and timelines
+	USTT_TimerController* TimerController = nullptr;
 
 public:	
 	// Sets default values for this component's properties
@@ -55,6 +59,10 @@ protected:
 	// Creates and initializes a movement state machine stack
 	void InitMovementStateMachineStack();
 
+	// Scarlet_TimersAndTimelines integration
+	// Locates an existing timer controller component or creates a new one
+	void LocateOrCreateTimerController();
+
 
 public:	
 	// Called every frame
@@ -81,6 +89,10 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement")
 	USCM_MovementStateBase* GetActiveMovementState() { return ActiveState; }
 
+	// Scarlet_TimersAndTimelines integration
+	// Timer controller that handles custom timers and timelines
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement")
+	USTT_TimerController* GetTimerController() { return TimerController; }
 
 // INPUT
 
@@ -276,6 +288,19 @@ protected:
 		return ParameterStorage["Default"];
 	}
 
+	// Checks if the specified parameter exists and creates it if not
+	// Can also register a subsciption to the parameter
+	template< typename T>
+	void RegisterParameter(	TMap<FName, T>& ParameterStorage, const FName& ParameterName, const T& DefaultValue, 
+							bool AutoSubscribe, UObject* Subscriber, FName NotificationFunctionName)
+	{
+		if (!ParameterStorage.Contains(ParameterName))
+			ParameterStorage.Add(ParameterName, DefaultValue);
+
+		if (AutoSubscribe)
+			SubscribeToParameter(ParameterName, Subscriber, NotificationFunctionName);
+	}
+
 public:
 
 	// Subscribes the given rig element to the given custom parameter's update notifications
@@ -285,6 +310,15 @@ public:
 	// Returns name lists for all movement parameters
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Parameters")
 	void GetAllParameterNames(TArray<FName>& BoolParameters, TArray<FName>& IntParameters, TArray<FName>& FloatParameters);
+
+
+	// Registers a new parameter, initialized with a default value. Also provides means to subscribe to the created paramter right away
+	UFUNCTION(BlueprintCallable, Category = "ScarletMovement|Parameters")
+	void RegisterBoolParameter(	const FName& ParameterName, bool DefaultValue,
+								bool AutoSubscribe = false, UObject* Subscriber = nullptr, FName NotificationFunctionName = "")
+	{
+		RegisterParameter<bool>(BoolParameterStorage, ParameterName, DefaultValue, AutoSubscribe, Subscriber, NotificationFunctionName);
+	}
 
 	// Sets a bool-type input value
 	UFUNCTION(BlueprintCallable, Category = "ScarletMovement|Parameters")
@@ -299,6 +333,14 @@ public:
 	bool IsBoolParameterValid(const FName& InParameterName) { return BoolParameterStorage.Contains(InParameterName); }
 
 
+	// Registers a new parameter, initialized with a default value. Also provides means to subscribe to the created paramter right away
+	UFUNCTION(BlueprintCallable, Category = "ScarletMovement|Parameters")
+	void RegisterIntParameter(const FName& ParameterName, int32 DefaultValue,
+		bool AutoSubscribe = false, UObject* Subscriber = nullptr, FName NotificationFunctionName = "")
+	{
+		RegisterParameter<int32>(IntParameterStorage, ParameterName, DefaultValue, AutoSubscribe, Subscriber, NotificationFunctionName);
+	}
+
 	// Sets a Int-type input value
 	UFUNCTION(BlueprintCallable, Category = "ScarletMovement|Parameters")
 	void SetIntParameterValue(const FName& InParameterName, int32 InValue) { SetParameterValue<int32>(IntParameterStorage, InParameterName, InValue); }
@@ -311,6 +353,14 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Parameters")
 	bool IsIntParameterValid(const FName& InParameterName) { return IntParameterStorage.Contains(InParameterName); }
 
+
+	// Registers a new parameter, initialized with a default value. Also provides means to subscribe to the created paramter right away
+	UFUNCTION(BlueprintCallable, Category = "ScarletMovement|Parameters")
+	void RegisterFloatParameter(const FName& ParameterName, float DefaultValue,
+		bool AutoSubscribe = false, UObject* Subscriber = nullptr, FName NotificationFunctionName = "")
+	{
+		RegisterParameter<float>(FloatParameterStorage, ParameterName, DefaultValue, AutoSubscribe, Subscriber, NotificationFunctionName);
+	}
 
 	// Sets a Float-type input value
 	UFUNCTION(BlueprintCallable, Category = "ScarletMovement|Parameters")

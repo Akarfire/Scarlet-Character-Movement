@@ -29,6 +29,9 @@ void UScarletMovementComponent::BeginPlay()
 	if (AutoDetectCharacterMovement)
 		SetCharacterMovementComponent(DetectCharacterMovementComponent());
 	
+	// Locates an existing timer controller component or creates a new one
+	LocateOrCreateTimerController();
+
 	// Initializing movement state machine stack
 	InitMovementStateMachineStack();
 }
@@ -63,12 +66,7 @@ void UScarletMovementComponent::InitMovementStateMachineStack()
 			MovementStateMachine->MOVEMENTSTATEMACHINE_SetScarletMovement(this);
 			MovementStateMachine->InitStateMachine();
 
-			for (auto& State : MovementStateMachine->GetStates())
-			{
-				USCM_MovementStateBase* MovementState = Cast<USCM_MovementStateBase>(State.Value);
-				if (MovementState)
-					MovementState->SetupParameters();
-			}
+			MovementStateMachine->SetupParameters();
 		}
 
 		// Linking with the previous layer
@@ -82,6 +80,20 @@ void UScarletMovementComponent::InitMovementStateMachineStack()
 	}
 }
 
+// Scarlet_TimersAndTimelines integration
+// Locates an existing timer controller component or creates a new one
+void UScarletMovementComponent::LocateOrCreateTimerController()
+{
+	UActorComponent* TimerController_ActorComponent = GetOwner()->GetComponentByClass(USTT_TimerController::StaticClass());
+	if (!TimerController_ActorComponent)
+	{
+		TimerController_ActorComponent = GetOwner()->AddComponentByClass(USTT_TimerController::StaticClass(), false, FTransform(), false);
+		GetOwner()->AddInstanceComponent(TimerController_ActorComponent);
+	}
+
+	TimerController = Cast<USTT_TimerController>(TimerController_ActorComponent);
+}
+
 
 // Called every frame
 void UScarletMovementComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -89,6 +101,7 @@ void UScarletMovementComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	if (!IsActive()) return;
+	if (!GetCharacterMovementComponent()) return;
 
 	// Input interpolation
 	UpdateInputInterpolation(DeltaTime);
@@ -172,6 +185,8 @@ void UScarletMovementComponent::SubscribeToParameter(FName ParameterName, UObjec
 			ParameterSubscriptions.Add(ParameterName, FOnMovementParameterValueChanged());
 
 		ParameterSubscriptions[ParameterName].Add(Delegate);
+
+		SendParameterNotifications(ParameterName);
 	}
 }
 

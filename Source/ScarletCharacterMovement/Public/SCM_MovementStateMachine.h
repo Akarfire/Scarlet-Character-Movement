@@ -22,15 +22,23 @@ protected:
 
 public:
 
+	// Called every time the state machine is updated (after the main update) (to be overriden)
+	virtual void OnUpdateStateMachine_Implementation(float DeltaTime);
+
 	// CALLED BY ScarletMovementComponent. Initializes ScarletMovement value
 	void MOVEMENTSTATEMACHINE_SetScarletMovement(UScarletMovementComponent* InScarletMovementComponent) { ScarletMovement = InScarletMovementComponent; }
+
+	// CALLED BY ScarletMovementComponent. Call SetupParameters on the states and triggers OnSetupParameters
+	void SetupParameters();
+
+	// Needed to register state-machine level movement parameters (for state transition conditions)
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent)
+	void OnSetupParameters();
+	virtual void OnSetupParameters_Implementation() {}
 
 	// Returns a pointer to the ScarletMovementComponent that owns this state machine
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|MovementStateMachine")
 	UScarletMovementComponent* GetScarletMovement() { return ScarletMovement; }
-
-	// Called every time the state machine is updated (after the main update) (to be overriden)
-	virtual void OnUpdateStateMachine_Implementation(float DeltaTime);
 
 	// Returns a pointer to the Character Movement Component that is controlled by this Scarlet Movement State Machine
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|MovementStateMachine")

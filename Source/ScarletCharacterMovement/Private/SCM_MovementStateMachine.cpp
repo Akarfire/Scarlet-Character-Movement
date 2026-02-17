@@ -12,3 +12,16 @@ void USCM_MovementStateMachine::OnUpdateStateMachine_Implementation(float DeltaT
 	if (MovementState)
 		GetScarletMovement()->ActiveState = MovementState;
 }
+
+// CALLED BY ScarletMovementComponent. Call SetupParameters on the states and triggers OnSetupParameters
+void USCM_MovementStateMachine::SetupParameters()
+{
+	OnSetupParameters();
+
+	for (auto& State : GetStates())
+	{
+		USCM_MovementStateBase* MovementState = Cast<USCM_MovementStateBase>(State.Value);
+		if (MovementState)
+			MovementState->SetupParameters();
+	}
+}
