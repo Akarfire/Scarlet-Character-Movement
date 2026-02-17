@@ -3,6 +3,8 @@
 
 #include "SCM_GroundMovement.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/Character.h"
+#include "Components/CapsuleComponent.h"
 
 // WALKING
 
@@ -11,21 +13,11 @@ void USCM_Walking::SetupParameters_Implementation()
 {
 	UScarletMovementComponent* SM = GetScarletMovement();
 
-	if (!SM->IsFloatParameterValid("WalkingSpeed"))
-		SM->SetFloatParameterValue("WalkingSpeed", WalkingSpeed);
-	SM->SubscribeToParameter("WalkingSpeed", this, "OnParameterValueChanged");
+	SM->RegisterFloatParameter("WalkingSpeed", WalkingSpeed, true, this, "OnParameterValueChanged");
+	SM->RegisterFloatParameter("MovementInputIterpolationSpeed", MovementInputIterpolationSpeed, true, this, "OnParameterValueChanged");
 
-	if (!SM->IsFloatParameterValid("MovementInputIterpolationSpeed"))
-		SM->SetFloatParameterValue("MovementInputIterpolationSpeed", MovementInputIterpolationSpeed);
-	SM->SubscribeToParameter("MovementInputIterpolationSpeed", this, "OnParameterValueChanged");
-
-	if (!SM->IsBoolParameterValid("OrientRotationToMovement"))
-		SM->SetBoolParameterValue("OrientRotationToMovement", OrientRotationToMovement);
-	SM->SubscribeToParameter("OrientRotationToMovement", this, "OnParameterValueChanged");
-
-	if (!SM->IsBoolParameterValid("OrientRotationToMovementWhenAiming"))
-		SM->SetBoolParameterValue("OrientRotationToMovementWhenAiming", OrientRotationToMovementWhenAiming);
-	SM->SubscribeToParameter("OrientRotationToMovementWhenAiming", this, "OnParameterValueChanged");
+	SM->RegisterBoolParameter("OrientRotationToMovement", OrientRotationToMovement, true, this, "OnParameterValueChanged");
+	SM->RegisterBoolParameter("OrientRotationToMovementWhenAiming", OrientRotationToMovementWhenAiming, true, this, "OnParameterValueChanged");
 }
 
 // Called when any parameter value is changed
@@ -44,7 +36,7 @@ void USCM_Walking::OnParameterValueChanged(const FName& ParameterName)
 		OrientRotationToMovementWhenAiming = GetScarletMovement()->GetBoolParameterValue("OrientRotationToMovementWhenAiming");
 
 	// If the state is active
-	if (GetStateMachine()->GetActiveState() == StateID)
+	if (GetScarletMovement()->GetActiveMovementState() == this)
 	{
 		GetCharacterMovement()->MaxWalkSpeed = WalkingSpeed;
 		GetScarletMovement()->MovementInputInterpolationSpeed = MovementInputIterpolationSpeed;
@@ -73,6 +65,7 @@ void USCM_Walking::UpdateState_Implementation(float DeltaTime)
 	bool IsAiming = GetScarletMovement()->GetBoolInputValue("Aim");
 
 	GetCharacterMovement()->bOrientRotationToMovement = IsAiming ? OrientRotationToMovementWhenAiming : OrientRotationToMovement;
+	GetScarletMovement()->GetCharacterMovementComponent()->GetCharacterOwner()->bUseControllerRotationYaw = !GetCharacterMovement()->bOrientRotationToMovement;
 }
 
 
@@ -84,17 +77,11 @@ void USCM_Running::SetupParameters_Implementation()
 {
 	UScarletMovementComponent* SM = GetScarletMovement();
 
-	if (!SM->IsFloatParameterValid("RunningSpeed"))
-		SM->SetFloatParameterValue("RunningSpeed", RunningSpeed);
-	SM->SubscribeToParameter("RunningSpeed", this, "OnParameterValueChanged");
+	SM->RegisterFloatParameter("RunningSpeed", RunningSpeed, true, this, "OnParameterValueChanged");
+	SM->RegisterFloatParameter("MovementInputIterpolationSpeed_Running", MovementInputIterpolationSpeed, true, this, "OnParameterValueChanged");
 
-	if (!SM->IsFloatParameterValid("MovementInputIterpolationSpeed"))
-		SM->SetFloatParameterValue("MovementInputIterpolationSpeed", MovementInputIterpolationSpeed);
-	SM->SubscribeToParameter("MovementInputIterpolationSpeed", this, "OnParameterValueChanged");
-
-	if (!SM->IsBoolParameterValid("OrientRotationToMovementWhenRunning"))
-		SM->SetBoolParameterValue("OrientRotationToMovementWhenRunning", OrientRotationToMovementWhenRunning);
-	SM->SubscribeToParameter("OrientRotationToMovementWhenRunning", this, "OnParameterValueChanged");
+	SM->RegisterBoolParameter("OrientRotationToMovement_Running", OrientRotationToMovement, true, this, "OnParameterValueChanged");
+	SM->RegisterBoolParameter("OrientRotationToMovementWhenAiming_Running", OrientRotationToMovementWhenAiming, true, this, "OnParameterValueChanged");
 }
 
 // Called when any parameter value is changed
@@ -103,14 +90,17 @@ void USCM_Running::OnParameterValueChanged(const FName& ParameterName)
 	if (ParameterName == "RunningSpeed")
 		RunningSpeed = GetScarletMovement()->GetFloatParameterValue("RunningSpeed");
 
-	else if (ParameterName == "MovementInputIterpolationSpeed")
-		MovementInputIterpolationSpeed = GetScarletMovement()->GetFloatParameterValue("MovementInputIterpolationSpeed");
+	else if (ParameterName == "MovementInputIterpolationSpeed_Running")
+		MovementInputIterpolationSpeed = GetScarletMovement()->GetFloatParameterValue("MovementInputIterpolationSpeed_Running");
 
-	else if (ParameterName == "OrientRotationToMovementWhenRunning")
-		OrientRotationToMovementWhenRunning = GetScarletMovement()->GetBoolParameterValue("OrientRotationToMovementWhenRunning");
+	else if (ParameterName == "OrientRotationToMovement_Running")
+		OrientRotationToMovement = GetScarletMovement()->GetBoolParameterValue("OrientRotationToMovement_Running");
+
+	else if (ParameterName == "OrientRotationToMovementWhenAiming_Running")
+		OrientRotationToMovementWhenAiming = GetScarletMovement()->GetBoolParameterValue("OrientRotationToMovementWhenAiming_Running");
 
 	// If the state is active
-	if (GetStateMachine()->GetActiveState() == StateID)
+	if (GetScarletMovement()->GetActiveMovementState() == this)
 	{
 		GetCharacterMovement()->MaxWalkSpeed = RunningSpeed;
 		GetScarletMovement()->MovementInputInterpolationSpeed = MovementInputIterpolationSpeed;
@@ -136,5 +126,168 @@ void USCM_Running::UpdateState_Implementation(float DeltaTime)
 	GetCharacterMovement()->AddInputVector(MovementVector);
 
 	// Orient Rotation To Movement
-	GetCharacterMovement()->bOrientRotationToMovement = OrientRotationToMovementWhenRunning;
+	bool IsAiming = GetScarletMovement()->GetBoolInputValue("Aim");
+	GetCharacterMovement()->bOrientRotationToMovement = IsAiming ? OrientRotationToMovementWhenAiming : OrientRotationToMovement;
+	GetScarletMovement()->GetCharacterMovementComponent()->GetCharacterOwner()->bUseControllerRotationYaw = !GetCharacterMovement()->bOrientRotationToMovement;
+}
+
+
+// CROUCHING
+
+// Registering parameters
+void USCM_Crouching::SetupParameters_Implementation()
+{
+	UScarletMovementComponent* SM = GetScarletMovement();
+
+	SM->RegisterFloatParameter("CapsuleHeightMultiplier_Crouching", CapsuleHeightMultiplier, true, this, "OnParameterValueChanged");
+	SM->RegisterFloatParameter("CrouchWalkingSpeed", CrouchWalkingSpeed, true, this, "OnParameterValueChanged");
+	SM->RegisterFloatParameter("MovementInputIterpolationSpeed_Crouching", MovementInputIterpolationSpeed, true, this, "OnParameterValueChanged");
+
+	SM->RegisterBoolParameter("OrientRotationToMovement_Crouching", OrientRotationToMovement, true, this, "OnParameterValueChanged");
+	SM->RegisterBoolParameter("OrientRotationToMovementWhenAiming_Crouching", OrientRotationToMovementWhenAiming, true, this, "OnParameterValueChanged");
+}
+
+// Called when any parameter value is changed
+void USCM_Crouching::OnParameterValueChanged(const FName& ParameterName)
+{
+	if (ParameterName == "CapsuleHeightMultiplier_Crouching")
+		CapsuleHeightMultiplier = GetScarletMovement()->GetFloatParameterValue("CapsuleHeightMultiplier_Crouching");
+
+	else if (ParameterName == "CrouchWalkingSpeed")
+		CrouchWalkingSpeed = GetScarletMovement()->GetFloatParameterValue("CrouchWalkingSpeed");
+
+	else if (ParameterName == "MovementInputIterpolationSpeed_Crouching")
+		MovementInputIterpolationSpeed = GetScarletMovement()->GetFloatParameterValue("MovementInputIterpolationSpeed_Crouching");
+
+	else if (ParameterName == "OrientRotationToMovement_Crouching")
+		OrientRotationToMovement = GetScarletMovement()->GetBoolParameterValue("OrientRotationToMovement_Crouching");
+
+	else if (ParameterName == "OrientRotationToMovementWhenAiming_Crouching")
+		OrientRotationToMovementWhenAiming = GetScarletMovement()->GetBoolParameterValue("OrientRotationToMovementWhenAiming_Crouching");
+
+	// If the state is active
+	if (GetScarletMovement()->GetActiveMovementState() == this)
+	{
+		GetCharacterMovement()->MaxWalkSpeed = CrouchWalkingSpeed;
+		GetScarletMovement()->MovementInputInterpolationSpeed = MovementInputIterpolationSpeed;
+	}
+}
+
+void USCM_Crouching::EnterState_Implementation()
+{
+	UCharacterMovementComponent* CM = GetCharacterMovement();
+	CM->SetMovementMode(EMovementMode::MOVE_Walking);
+	CM->MaxWalkSpeed = CrouchWalkingSpeed;
+	CM->CrouchedHalfHeight = GetCharacterMovement()->GetCharacterOwner()->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight() * CapsuleHeightMultiplier;
+
+	// Actual crouching
+	CM->bWantsToCrouch = true;
+
+	GetScarletMovement()->MovementInputInterpolationSpeed = MovementInputIterpolationSpeed;
+}
+
+void USCM_Crouching::ExitState_Implementation()
+{
+	UCharacterMovementComponent* CM = GetCharacterMovement();
+	CM->bWantsToCrouch = false;
+}
+
+void USCM_Crouching::UpdateState_Implementation(float DeltaTime)
+{
+	FVector MovementVector = GetScarletMovement()->GetMovementInputVector();
+	GetCharacterMovement()->AddInputVector(MovementVector);
+
+	// Orient Rotation To Movement
+	bool IsAiming = GetScarletMovement()->GetBoolInputValue("Aim");
+
+	GetCharacterMovement()->bOrientRotationToMovement = IsAiming ? OrientRotationToMovementWhenAiming : OrientRotationToMovement;
+	GetScarletMovement()->GetCharacterMovementComponent()->GetCharacterOwner()->bUseControllerRotationYaw = !GetCharacterMovement()->bOrientRotationToMovement;
+}
+
+
+// SLIDING
+
+// Registering parameters
+void USCM_Sliding::SetupParameters_Implementation()
+{
+	UScarletMovementComponent* SM = GetScarletMovement();
+
+	SM->RegisterFloatParameter("CapsuleHeightMultiplier_Sliding", CapsuleHeightMultiplier, true, this, "OnParameterValueChanged");
+	SM->RegisterFloatParameter("SlideBoost", SlideBoost, true, this, "OnParameterValueChanged");
+	SM->RegisterFloatParameter("GroundFriction_Sliding", GroundFriction, true, this, "OnParameterValueChanged");
+
+	SM->RegisterBoolParameter("OrientRotationToMovement_Sliding", OrientRotationToMovement, true, this, "OnParameterValueChanged");
+	SM->RegisterBoolParameter("OrientRotationToMovementWhenAiming_Sliding", OrientRotationToMovementWhenAiming, true, this, "OnParameterValueChanged");
+
+	// Control parameters
+	SM->RegisterBoolParameter("SlideInterrupt", false);
+}
+
+// Called when any parameter value is changed
+void USCM_Sliding::OnParameterValueChanged(const FName& ParameterName)
+{
+	if (ParameterName == "CapsuleHeightMultiplier_Sliding")
+		CapsuleHeightMultiplier = GetScarletMovement()->GetFloatParameterValue("CapsuleHeightMultiplier_Sliding");
+
+	else if (ParameterName == "SlideBoost")
+		SlideBoost = GetScarletMovement()->GetFloatParameterValue("SlideBoost");
+
+	else if (ParameterName == "GroundFriction_Sliding")
+		GroundFriction = GetScarletMovement()->GetFloatParameterValue("GroundFriction_Sliding");
+
+	else if (ParameterName == "OrientRotationToMovement_Sliding")
+		OrientRotationToMovement = GetScarletMovement()->GetBoolParameterValue("OrientRotationToMovement_Sliding");
+
+	else if (ParameterName == "OrientRotationToMovementWhenAiming_Sliding")
+		OrientRotationToMovementWhenAiming = GetScarletMovement()->GetBoolParameterValue("OrientRotationToMovementWhenAiming_Sliding");
+}
+
+void USCM_Sliding::EnterState_Implementation()
+{
+	// Movement parameters
+	UCharacterMovementComponent* CM = GetCharacterMovement();
+	CM->SetMovementMode(EMovementMode::MOVE_Walking);
+
+	auto* Capsule = GetCharacterMovement()->GetCharacterOwner()->GetCapsuleComponent();
+	//Capsule->SetCapsuleHalfHeight(Capsule->GetUnscaledCapsuleHalfHeight() * CapsuleHeightMultiplier);
+	CM->CrouchedHalfHeight = GetCharacterMovement()->GetCharacterOwner()->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight() * CapsuleHeightMultiplier;
+	CM->bWantsToCrouch = true;
+
+
+	PreviousGroundFriction = CM->GroundFriction;
+	CM->GroundFriction = GroundFriction;
+
+	// Normal sampling
+	FVector Normal = FVector::ZeroVector;
+
+	FVector Start = GetScarletMovement()->GetOwner()->GetActorLocation();
+	FVector End = Start - FVector::UpVector * Capsule->GetScaledCapsuleHalfHeight() * 1.1f;
+	FHitResult Hit;
+	if (GetScarletMovement()->GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility))
+	{
+		Normal = Hit.Normal;
+	
+		// Slide boost
+		FVector Boost = SlideBoost * (-1.f) * FVector::CrossProduct(Normal, GetScarletMovement()->GetOwner()->GetActorRightVector());
+		GetCharacterMovement()->GetCharacterOwner()->LaunchCharacter(Boost, false, false);
+	}
+}
+
+void USCM_Sliding::ExitState_Implementation()
+{
+	UCharacterMovementComponent* CM = GetCharacterMovement();
+	CM->GroundFriction = PreviousGroundFriction;
+
+	CM->bWantsToCrouch = false;
+	//auto* Capsule = GetCharacterMovement()->GetCharacterOwner()->GetCapsuleComponent();
+	//Capsule->SetCapsuleHalfHeight(Capsule->GetUnscaledCapsuleHalfHeight() / CapsuleHeightMultiplier);
+}
+
+void USCM_Sliding::UpdateState_Implementation(float DeltaTime)
+{
+	// Orient Rotation To Movement
+	bool IsAiming = GetScarletMovement()->GetBoolInputValue("Aim");
+
+	GetCharacterMovement()->bOrientRotationToMovement = IsAiming ? OrientRotationToMovementWhenAiming : OrientRotationToMovement;
+	GetScarletMovement()->GetCharacterMovementComponent()->GetCharacterOwner()->bUseControllerRotationYaw = !GetCharacterMovement()->bOrientRotationToMovement;
 }
