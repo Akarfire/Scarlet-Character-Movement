@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "STT_TimerController.h"
+#include "DynamicGates.h"
 #include "ScarletMovementComponent.generated.h"
 
 
@@ -373,4 +374,87 @@ public:
 	// Whether the specified Float-type parameter exists or not
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Parameters")
 	bool IsFloatParameterValid(const FName& InParameterName) { return FloatParameterStorage.Contains(InParameterName); }
+
+
+
+// DYNAMIC GATES
+protected:
+
+	// Map of dynamic gates
+	TMap<FName, FSCM_DynamicGate> DynamicGates;
+
+public:
+
+	// Registers a new dynamic gate, return true if succeded. If a gate with the specified name already exists return "false"
+	UFUNCTION(BlueprintCallable, Category = "ScarletMovement|DynamicGates")
+	bool RegisterDynamicGate(const FName& GateName, ESCM_DynamicGateRule Rule, bool DefaultValue) 
+	{ 
+		if (DynamicGates.Contains(GateName)) 
+			return false;
+		DynamicGates.Add(GateName, FSCM_DynamicGate(Rule, DefaultValue));
+		return true;
+	}
+
+	// Whether a dynamic gate with the specified name exists or not
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|DynamicGates")
+	bool IsDynamicGateValid(const FName& GateName) { return DynamicGates.Contains(GateName); }
+
+	// Returns the resulting value of the dynamic gate, "false" if not found
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|DynamicGates")
+	bool GetDynamicGateValue(const FName& GateName)
+	{
+		FSCM_DynamicGate* GateP = DynamicGates.Find(GateName);
+		if (GateP)
+			return GateP->GetResultingGateValue();
+		return false;
+	}
+
+
+	// Returns the rule of the specified dynamic gate (Rule that is used to combine gate values to calculate the resulting value)
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|DynamicGates")
+	ESCM_DynamicGateRule GetDynamicGateRule(const FName& GateName)
+	{
+		FSCM_DynamicGate* GateP = DynamicGates.Find(GateName);
+		check(GateP);
+		return GateP->Rule;
+	}
+
+	// Updates gate's rule (Rule that is used to combine gate values to calculate the resulting value)
+	UFUNCTION(BlueprintCallable, Category = "ScarletMovement|DynamicGates")
+	void SetDynamicGateRule(const FName& GateName, ESCM_DynamicGateRule NewRule)
+	{
+		FSCM_DynamicGate* GateP = DynamicGates.Find(GateName);
+		check(GateP);
+		GateP->SetGateRule(NewRule);
+	}
+
+
+	// Adds/Updates a named value in the dynamic gate
+	UFUNCTION(BlueprintCallable, Category = "ScarletMovement|DynamicGates")
+	void SetDynamicGateNamedValue(const FName& GateName, const FName& ValueName, bool Value)
+	{
+		FSCM_DynamicGate* GateP = DynamicGates.Find(GateName);
+		check(GateP);
+		GateP->SetNamedGateValue(ValueName, Value);
+	}
+
+	// Removes a named value frome the dynamic gate
+	UFUNCTION(BlueprintCallable, Category = "ScarletMovement|DynamicGates")
+	void RemoveDynamicGateNamedValue(const FName& GateName, const FName& ValueName)
+	{
+		FSCM_DynamicGate* GateP = DynamicGates.Find(GateName);
+		check(GateP);
+		GateP->RemoveNamedGateValue(ValueName);
+	}
+
+	// Returns the named value from the dynamic gate, "false" if value not found
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|DynamicGates")
+	bool GetDynamicGateNamedValue(const FName& GateName, const FName& ValueName)
+	{
+		FSCM_DynamicGate* GateP = DynamicGates.Find(GateName);
+		check(GateP);
+		bool* ValueP = GateP->GetNamedGateValue(ValueName);
+		check(ValueP);
+		return *ValueP;
+	}
 };
