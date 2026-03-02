@@ -153,12 +153,18 @@ class SCARLETCHARACTERMOVEMENT_API USCM_Sliding : public USCM_MovementStateBase
 
 	float CapsuleHeightMultiplier = 0.5f;
 	float SlideBoost = 1250.f;
-	float GroundFriction = 0.0;
+	float GroundFriction = 0.0f;
+	float SlideCooldown = 0.5f;
+	float SlideJumpCooldown = 0.35f;
+	float GroundTraceMultiplier = 5.f;
 	bool OrientRotationToMovement = true;
 	bool OrientRotationToMovementWhenAiming = false;
 
 	// Cache
 	float PreviousGroundFriction = 0.0;
+
+	// Casts a line trace downwards
+	bool GroundTrace(FHitResult& OutHit);
 
 public:
 
@@ -168,6 +174,9 @@ public:
 	// Called when any parameter value is changed
 	UFUNCTION()
 	void OnParameterValueChanged(const FName& ParameterName);
+
+	UFUNCTION()
+	void OnTimerIsOver(FName InTimerName);
 
 	// Registering parameters
 	virtual void SetupParameters_Implementation() override;
@@ -231,6 +240,24 @@ public:
 			SlidingThresholdSpeed = GetScarletMovement()->GetFloatParameterValue("SlidingThresholdSpeed");
 	}
 
+	// Fired when this movement layer is entered
+	virtual void OnLayerEntered_Implementation() 
+	{
+		if (Condition_Walking_Sliding())
+			if (GetActiveState() != (uint8)ESCM_GroundMovementStates::Sliding)
+			{
+				GetState(GetActiveState())->ExitState();
+				ActiveState = (uint8)ESCM_GroundMovementStates::Sliding;
+			}
+	}
+
+	//  Fired when this movement layer is exited
+	virtual void OnLayerExit_Implementation() 
+	{
+		ForceCallStateTransition((uint8)ESCM_GroundMovementStates::Walking);
+		UpdateStateMachine(0.f);
+	}
+
 	// TRANSITION CONDITIONS
 	// Must be a UFUNCTION, will not work otherwise, and no, it will not crash, you will just be stuck there with no real signs of errors, so yeah
 
@@ -241,9 +268,9 @@ public:
 	UFUNCTION()
 	bool Condition_Walking_Crouching() { return	GetScarletMovement()->GetBoolInputValue("Crouch") 
 												&& GetCharacterMovement()->GetCharacterOwner()->GetVelocity().Size() < SlidingThresholdSpeed; }
-
 	UFUNCTION()
 	bool Condition_Walking_Sliding() { return GetScarletMovement()->GetBoolInputValue("Crouch") 
+											  && GetScarletMovement()->GetDynamicGateValue("CanSlide")
 											  && GetCharacterMovement()->GetCharacterOwner()->GetVelocity().Size() >= SlidingThresholdSpeed; }
 
 
@@ -252,6 +279,7 @@ public:
 
 	UFUNCTION()
 	bool Condition_Running_Sliding() { return GetScarletMovement()->GetBoolInputValue("Crouch") 
+											  && GetScarletMovement()->GetDynamicGateValue("CanSlide")
 											  && GetCharacterMovement()->GetCharacterOwner()->GetVelocity().Size() >= SlidingThresholdSpeed; }
 
 
@@ -259,7 +287,8 @@ public:
 	bool Condition_Crouching_Walking() { return !GetScarletMovement()->GetBoolInputValue("Crouch"); }
 
 	UFUNCTION()
-	bool Condition_Crouching_Sliding() { return GetCharacterMovement()->GetCharacterOwner()->GetVelocity().Size() >= SlidingThresholdSpeed; }
+	bool Condition_Crouching_Sliding() { return GetScarletMovement()->GetDynamicGateValue("CanSlide") 
+												&& GetCharacterMovement()->GetCharacterOwner()->GetVelocity().Size() >= SlidingThresholdSpeed; }
 
 
 	UFUNCTION()

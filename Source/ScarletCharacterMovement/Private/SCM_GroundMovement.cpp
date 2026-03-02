@@ -179,6 +179,7 @@ void USCM_Crouching::EnterState_Implementation()
 	CM->SetMovementMode(EMovementMode::MOVE_Walking);
 	CM->MaxWalkSpeed = CrouchWalkingSpeed;
 	CM->CrouchedHalfHeight = GetCharacterMovement()->GetCharacterOwner()->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight() * CapsuleHeightMultiplier;
+	CM->bCanWalkOffLedgesWhenCrouching = false;
 
 	// Actual crouching
 	CM->bWantsToCrouch = true;
@@ -215,12 +216,36 @@ void USCM_Sliding::SetupParameters_Implementation()
 	SM->RegisterFloatParameter("CapsuleHeightMultiplier_Sliding", CapsuleHeightMultiplier, true, this, "OnParameterValueChanged");
 	SM->RegisterFloatParameter("SlideBoost", SlideBoost, true, this, "OnParameterValueChanged");
 	SM->RegisterFloatParameter("GroundFriction_Sliding", GroundFriction, true, this, "OnParameterValueChanged");
+	SM->RegisterFloatParameter("SlideCooldown", SlideCooldown, true, this, "OnParameterValueChanged");
+	SM->RegisterFloatParameter("SlideJumpCooldown", SlideJumpCooldown, true, this, "OnParameterValueChanged");
+	SM->RegisterFloatParameter("GroundTraceMultiplier_Sliding", GroundTraceMultiplier, true, this, "OnParameterValueChanged");
 
 	SM->RegisterBoolParameter("OrientRotationToMovement_Sliding", OrientRotationToMovement, true, this, "OnParameterValueChanged");
 	SM->RegisterBoolParameter("OrientRotationToMovementWhenAiming_Sliding", OrientRotationToMovementWhenAiming, true, this, "OnParameterValueChanged");
 
-	// Control parameters
-	SM->RegisterBoolParameter("SlideInterrupt", false);
+	// Sliding cool down
+	SM->GetTimerController()->CreateTimer("SlideCooldown", SlideCooldown, false, false);
+	SM->GetTimerController()->SubscribeToTimer("SlideCooldown", this, "OnTimerIsOver");
+
+	SM->RegisterDynamicGate("CanSlide", ESCM_DynamicGateRule::And, true);
+	SM->SetDynamicGateNamedValue("CanSlide", "SlideCooldown", true);
+
+	// Jump cool down
+	SM->GetTimerController()->CreateTimer("SlideJumpCooldown", SlideJumpCooldown, false, false);
+	SM->GetTimerController()->SubscribeToTimer("SlideJumpCooldown", this, "OnTimerIsOver");
+
+	if (SM->IsDynamicGateValid("CanJump"))
+		SM->SetDynamicGateNamedValue("CanJump", "SlideJumpCooldown", true);
+}
+
+bool USCM_Sliding::GroundTrace(FHitResult& OutHit)
+{
+	auto* Capsule = GetCharacterMovement()->GetCharacterOwner()->GetCapsuleComponent();
+
+	FVector Start = GetScarletMovement()->GetOwner()->GetActorLocation();
+	FVector End = Start - FVector::UpVector * Capsule->GetScaledCapsuleHalfHeight() * 1.1f;
+
+	return GetScarletMovement()->GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_Visibility);
 }
 
 // Called when any parameter value is changed
@@ -235,11 +260,44 @@ void USCM_Sliding::OnParameterValueChanged(const FName& ParameterName)
 	else if (ParameterName == "GroundFriction_Sliding")
 		GroundFriction = GetScarletMovement()->GetFloatParameterValue("GroundFriction_Sliding");
 
+	else if (ParameterName == "SlideCooldown")
+	{
+		SlideCooldown = GetScarletMovement()->GetFloatParameterValue("SlideCooldown");
+		GetScarletMovement()->GetTimerController()->ChangeTimerLength("SlideCooldown", SlideCooldown);
+	}
+
+	else if (ParameterName == "SlideJumpCooldown")
+	{
+		SlideJumpCooldown = GetScarletMovement()->GetFloatParameterValue("SlideJumpCooldown");
+		GetScarletMovement()->GetTimerController()->ChangeTimerLength("SlideJumpCooldown", SlideJumpCooldown);
+	}
+
+	else if (ParameterName == "GroundTraceMultiplier_Sliding")
+	{
+		float OldGroundTraceMultiplier = GroundTraceMultiplier;
+		GroundTraceMultiplier = GetScarletMovement()->GetFloatParameterValue("GroundTraceMultiplier_Sliding");
+		if (GetStateMachine()->GetActiveState() == GetStateID())
+		{
+			GetScarletMovement()->SetFloatParameterValue("GroundTraceDistance", GetScarletMovement()->GetFloatParameterValue("GroundTraceDistance") / OldGroundTraceMultiplier);
+			GetScarletMovement()->SetFloatParameterValue("GroundTraceDistance", GetScarletMovement()->GetFloatParameterValue("GroundTraceDistance") * GroundTraceMultiplier);
+		}
+	}
+
 	else if (ParameterName == "OrientRotationToMovement_Sliding")
 		OrientRotationToMovement = GetScarletMovement()->GetBoolParameterValue("OrientRotationToMovement_Sliding");
 
 	else if (ParameterName == "OrientRotationToMovementWhenAiming_Sliding")
 		OrientRotationToMovementWhenAiming = GetScarletMovement()->GetBoolParameterValue("OrientRotationToMovementWhenAiming_Sliding");
+}
+
+void USCM_Sliding::OnTimerIsOver(FName InTimerName)
+{
+	if (InTimerName == "SlideCooldown")
+		GetScarletMovement()->SetDynamicGateNamedValue("CanSlide", "SlideCooldown", true);
+
+	else if (InTimerName == "SlideJumpCooldown")
+		if (GetScarletMovement()->IsDynamicGateValid("CanJump"))
+			GetScarletMovement()->SetDynamicGateNamedValue("CanJump", "SlideJumpCooldown", true);
 }
 
 void USCM_Sliding::EnterState_Implementation()
@@ -251,6 +309,7 @@ void USCM_Sliding::EnterState_Implementation()
 	auto* Capsule = GetCharacterMovement()->GetCharacterOwner()->GetCapsuleComponent();
 	//Capsule->SetCapsuleHalfHeight(Capsule->GetUnscaledCapsuleHalfHeight() * CapsuleHeightMultiplier);
 	CM->CrouchedHalfHeight = GetCharacterMovement()->GetCharacterOwner()->GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight() * CapsuleHeightMultiplier;
+	CM->bCanWalkOffLedgesWhenCrouching = true;
 	CM->bWantsToCrouch = true;
 
 
@@ -259,11 +318,8 @@ void USCM_Sliding::EnterState_Implementation()
 
 	// Normal sampling
 	FVector Normal = FVector::ZeroVector;
-
-	FVector Start = GetScarletMovement()->GetOwner()->GetActorLocation();
-	FVector End = Start - FVector::UpVector * Capsule->GetScaledCapsuleHalfHeight() * 1.1f;
 	FHitResult Hit;
-	if (GetScarletMovement()->GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility))
+	if (GroundTrace(Hit))
 	{
 		Normal = Hit.Normal;
 	
@@ -271,6 +327,17 @@ void USCM_Sliding::EnterState_Implementation()
 		FVector Boost = SlideBoost * (-1.f) * FVector::CrossProduct(Normal, GetScarletMovement()->GetOwner()->GetActorRightVector());
 		GetCharacterMovement()->GetCharacterOwner()->LaunchCharacter(Boost, false, false);
 	}
+
+	// Jump cool down
+	if (GetScarletMovement()->IsDynamicGateValid("CanJump"))
+	{
+		GetScarletMovement()->SetDynamicGateNamedValue("CanJump", "SlideJumpCooldown", false);
+		GetScarletMovement()->GetTimerController()->ResetTimer("SlideJumpCooldown");
+		GetScarletMovement()->GetTimerController()->StartTimer("SlideJumpCooldown");
+	}
+
+	// Ground trace distance
+	GetScarletMovement()->SetFloatParameterValue("GroundTraceDistance", GetScarletMovement()->GetFloatParameterValue("GroundTraceDistance") * GroundTraceMultiplier);
 }
 
 void USCM_Sliding::ExitState_Implementation()
@@ -281,13 +348,28 @@ void USCM_Sliding::ExitState_Implementation()
 	CM->bWantsToCrouch = false;
 	//auto* Capsule = GetCharacterMovement()->GetCharacterOwner()->GetCapsuleComponent();
 	//Capsule->SetCapsuleHalfHeight(Capsule->GetUnscaledCapsuleHalfHeight() / CapsuleHeightMultiplier);
+
+	// Slide Cooldown
+	GetScarletMovement()->SetDynamicGateNamedValue("CanSlide", "SlideCooldown", false);
+	GetScarletMovement()->GetTimerController()->ResetTimer("SlideCooldown");
+	GetScarletMovement()->GetTimerController()->StartTimer("SlideCooldown");
+
+	// Ground trace distance
+	GetScarletMovement()->SetFloatParameterValue("GroundTraceDistance", GetScarletMovement()->GetFloatParameterValue("GroundTraceDistance") / GroundTraceMultiplier);
 }
 
 void USCM_Sliding::UpdateState_Implementation(float DeltaTime)
 {
+	auto* Character = GetScarletMovement()->GetCharacterMovementComponent()->GetCharacterOwner();
+
 	// Orient Rotation To Movement
 	bool IsAiming = GetScarletMovement()->GetBoolInputValue("Aim");
 
 	GetCharacterMovement()->bOrientRotationToMovement = IsAiming ? OrientRotationToMovementWhenAiming : OrientRotationToMovement;
-	GetScarletMovement()->GetCharacterMovementComponent()->GetCharacterOwner()->bUseControllerRotationYaw = !GetCharacterMovement()->bOrientRotationToMovement;
+	Character->bUseControllerRotationYaw = !GetCharacterMovement()->bOrientRotationToMovement;
+
+	// Ground suction force
+	/*FHitResult Hit;
+	if (GroundTrace(Hit))
+		GetCharacterMovement()->AddForce(-1.f * Hit.Normal * 10000.f);*/
 }
