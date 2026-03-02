@@ -8,6 +8,7 @@
 #include "ScarletMovementFunctionLibrary.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "SSM_NestedStateMachineState.h"
 
 
 // Sets default values for this component's properties
@@ -70,10 +71,11 @@ void UScarletMovementComponent::InitMovementStateMachineStack()
 		}
 
 		// Linking with the previous layer
-		if (i > 0 && MovementStateMachine->GetClass()->ImplementsInterface(USCM_StateMachineInterface::StaticClass()))
+		if (i > 0)
 		{
-			USSM_NestedStateMachineState* LowerLayerContainer = ISCM_StateMachineInterface::Execute_GetLowerLayerContainerState(MovementStateMachine);
-			LowerLayerContainer->SetEmbeddedStateMachine(MovementStateMachineStack[i - 1]);
+			USSM_NestedStateMachineState* LowerLayerContainer = MovementStateMachine->GetLowerLayerContainerState();
+			if (LowerLayerContainer)
+				LowerLayerContainer->SetEmbeddedStateMachine(MovementStateMachineStack[i - 1]);
 		}
 
 		MovementStateMachineStack.Add(MovementStateMachine);

@@ -43,4 +43,22 @@ public:
 	// Returns a pointer to the Character Movement Component that is controlled by this Scarlet Movement State Machine
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|MovementStateMachine")
 	class UCharacterMovementComponent* GetCharacterMovement() { return ScarletMovement->GetCharacterMovementComponent(); }
+
+
+	// LAYERING INTERFACE
+
+	// Returns a pointer to the state that contains the lower level of the movement state machine stack
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "ScarletMovement|Layers")
+	USSM_NestedStateMachineState* GetLowerLayerContainerState();
+	virtual USSM_NestedStateMachineState* GetLowerLayerContainerState_Implementation() { return nullptr; }
+
+	// Fired when this movement layer is entered
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "ScarletMovement|Layers")
+	void OnLayerEntered();
+	virtual void OnLayerEntered_Implementation() {}
+
+	//  Fired when this movement layer is exited
+	UFUNCTION(BlueprintCallable, BlueprintNativeEvent, Category = "ScarletMovement|Layers")
+	void OnLayerExit();
+	virtual void OnLayerExit_Implementation() {}
 };
