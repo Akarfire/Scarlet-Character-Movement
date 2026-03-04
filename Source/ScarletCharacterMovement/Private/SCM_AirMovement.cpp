@@ -78,7 +78,7 @@ void USCM_Jumping::SetupParameters_Implementation()
 	UScarletMovementComponent* SM = GetScarletMovement();
 
 	SM->RegisterFloatParameter("JumpZVelocity", JumpZVelocity, true, this, "OnParameterValueChanged");
-	SM->RegisterFloatParameter("AirControl", AirControl, true, this, "OnParameterValueChanged");
+	SM->RegisterFloatParameter("AirControl_Jumping", AirControl, true, this, "OnParameterValueChanged");
 	SM->RegisterFloatParameter("HorizontalVelocityBoostFraction_Jumping", HorizontalVelocityBoostFraction, true, this, "OnParameterValueChanged");
 	SM->RegisterFloatParameter("MovementInputIterpolationSpeed_Jumping", MovementInputIterpolationSpeed, true, this, "OnParameterValueChanged");
 
@@ -92,8 +92,8 @@ void USCM_Jumping::OnParameterValueChanged(const FName& ParameterName)
 	if (ParameterName == "JumpZVelocity")
 		JumpZVelocity = GetScarletMovement()->GetFloatParameterValue("JumpZVelocity");
 
-	else if (ParameterName == "AirControl")
-		AirControl = GetScarletMovement()->GetFloatParameterValue("AirControl");
+	else if (ParameterName == "AirControl_Jumping")
+		AirControl = GetScarletMovement()->GetFloatParameterValue("AirControl_Jumping");
 
 	else if (ParameterName == "HorizontalVelocityBoostFraction_Jumping")
 		HorizontalVelocityBoostFraction = GetScarletMovement()->GetFloatParameterValue("HorizontalVelocityBoostFraction_Jumping");
