@@ -1,0 +1,770 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "ScarletMovementComponent.h"
+
+#include "SCM_GroundMovement.h"
+#include "SCM_RollingLayer.h"
+#include "SCM_AirMovement.h"
+#include "SCM_VaultingLayer.h"
+
+#include "ZarisMovementComponent.generated.h"
+
+/**
+ * 
+ */
+UCLASS(Blueprintable, BlueprintType, ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
+class SCARLETCHARACTERMOVEMENT_API UZarisMovementComponent : public UScarletMovementComponent
+{
+	GENERATED_BODY()
+	
+public:
+
+	// Constructor
+	UZarisMovementComponent()
+	{
+		// Layers
+		MovementStateMachineStackClasses = {
+			USCM_GroundMovement::StaticClass(),
+			USCM_RollingLayer::StaticClass(),
+			USCM_AirMovement::StaticClass(),
+			USCM_VaultingLayer::StaticClass()
+		};
+
+        // Basics
+        EnableMovementInputInterpolation = true;
+	}
+
+public:
+	// Parameters
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|GroundMovement|Walking")
+    float WalkingSpeed = 400.f;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|GroundMovement|Walking")
+    float GetWalkingSpeed() { return WalkingSpeed; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|GroundMovement|Walking")
+    void SetWalkingSpeed(float NewWalkingSpeed)
+    {
+        WalkingSpeed = NewWalkingSpeed;
+        SetFloatParameterValue("WalkingSpeed", WalkingSpeed);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|GroundMovement|Walking")
+    float MovementInputIterpolationSpeed = 5.f;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|GroundMovement|Walking")
+    float GetMovementInputIterpolationSpeed() { return MovementInputIterpolationSpeed; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|GroundMovement|Walking")
+    void SetMovementInputIterpolationSpeed(float NewMovementInputIterpolationSpeed)
+    {
+        MovementInputIterpolationSpeed = NewMovementInputIterpolationSpeed;
+        SetFloatParameterValue("MovementInputIterpolationSpeed", MovementInputIterpolationSpeed);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|GroundMovement|Walking")
+    bool OrientRotationToMovement = true;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|GroundMovement|Walking")
+    bool GetOrientRotationToMovement() { return OrientRotationToMovement; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|GroundMovement|Walking")
+    void SetOrientRotationToMovement(bool NewOrientRotationToMovement)
+    {
+        OrientRotationToMovement = NewOrientRotationToMovement;
+        SetBoolParameterValue("OrientRotationToMovement", OrientRotationToMovement);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|GroundMovement|Walking")
+    bool OrientRotationToMovementWhenAiming = false;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|GroundMovement|Walking")
+    bool GetOrientRotationToMovementWhenAiming() { return OrientRotationToMovementWhenAiming; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|GroundMovement|Walking")
+    void SetOrientRotationToMovementWhenAiming(bool NewOrientRotationToMovementWhenAiming)
+    {
+        OrientRotationToMovementWhenAiming = NewOrientRotationToMovementWhenAiming;
+        SetBoolParameterValue("OrientRotationToMovementWhenAiming", OrientRotationToMovementWhenAiming);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|GroundMovement|Running")
+    float RunningSpeed = 1000.f;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|GroundMovement|Running")
+    float GetRunningSpeed() { return RunningSpeed; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|GroundMovement|Running")
+    void SetRunningSpeed(float NewRunningSpeed)
+    {
+        RunningSpeed = NewRunningSpeed;
+        SetFloatParameterValue("RunningSpeed", RunningSpeed);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|GroundMovement|Running")
+    float MovementInputIterpolationSpeed_Running = 2.5f;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|GroundMovement|Running")
+    float GetMovementInputIterpolationSpeed_Running() { return MovementInputIterpolationSpeed_Running; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|GroundMovement|Running")
+    void SetMovementInputIterpolationSpeed_Running(float NewMovementInputIterpolationSpeed_Running)
+    {
+        MovementInputIterpolationSpeed_Running = NewMovementInputIterpolationSpeed_Running;
+        SetFloatParameterValue("MovementInputIterpolationSpeed_Running", MovementInputIterpolationSpeed_Running);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|GroundMovement|Running")
+    bool OrientRotationToMovement_Running = true;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|GroundMovement|Running")
+    bool GetOrientRotationToMovement_Running() { return OrientRotationToMovement_Running; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|GroundMovement|Running")
+    void SetOrientRotationToMovement_Running(bool NewOrientRotationToMovement_Running)
+    {
+        OrientRotationToMovement_Running = NewOrientRotationToMovement_Running;
+        SetBoolParameterValue("OrientRotationToMovement_Running", OrientRotationToMovement_Running);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|GroundMovement|Running")
+    bool OrientRotationToMovementWhenAiming_Running = true;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|GroundMovement|Running")
+    bool GetOrientRotationToMovementWhenAiming_Running() { return OrientRotationToMovementWhenAiming_Running; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|GroundMovement|Running")
+    void SetOrientRotationToMovementWhenAiming_Running(bool NewOrientRotationToMovementWhenAiming_Running)
+    {
+        OrientRotationToMovementWhenAiming_Running = NewOrientRotationToMovementWhenAiming_Running;
+        SetBoolParameterValue("OrientRotationToMovementWhenAiming_Running", OrientRotationToMovementWhenAiming_Running);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|GroundMovement|Crouching")
+    float CapsuleHeightMultiplier_Crouching = 0.5f;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|GroundMovement|Crouching")
+    float GetCapsuleHeightMultiplier_Crouching() { return CapsuleHeightMultiplier_Crouching; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|GroundMovement|Crouching")
+    void SetCapsuleHeightMultiplier_Crouching(float NewCapsuleHeightMultiplier_Crouching)
+    {
+        CapsuleHeightMultiplier_Crouching = NewCapsuleHeightMultiplier_Crouching;
+        SetFloatParameterValue("CapsuleHeightMultiplier_Crouching", CapsuleHeightMultiplier_Crouching);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|GroundMovement|Crouching")
+    float CrouchWalkingSpeed = 250.f;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|GroundMovement|Crouching")
+    float GetCrouchWalkingSpeed() { return CrouchWalkingSpeed; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|GroundMovement|Crouching")
+    void SetCrouchWalkingSpeed(float NewCrouchWalkingSpeed)
+    {
+        CrouchWalkingSpeed = NewCrouchWalkingSpeed;
+        SetFloatParameterValue("CrouchWalkingSpeed", CrouchWalkingSpeed);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|GroundMovement|Crouching")
+    float MovementInputIterpolationSpeed_Crouching = 7.5f;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|GroundMovement|Crouching")
+    float GetMovementInputIterpolationSpeed_Crouching() { return MovementInputIterpolationSpeed_Crouching; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|GroundMovement|Crouching")
+    void SetMovementInputIterpolationSpeed_Crouching(float NewMovementInputIterpolationSpeed_Crouching)
+    {
+        MovementInputIterpolationSpeed_Crouching = NewMovementInputIterpolationSpeed_Crouching;
+        SetFloatParameterValue("MovementInputIterpolationSpeed_Crouching", MovementInputIterpolationSpeed_Crouching);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|GroundMovement|Crouching")
+    bool OrientRotationToMovement_Crouching = true;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|GroundMovement|Crouching")
+    bool GetOrientRotationToMovement_Crouching() { return OrientRotationToMovement_Crouching; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|GroundMovement|Crouching")
+    void SetOrientRotationToMovement_Crouching(bool NewOrientRotationToMovement_Crouching)
+    {
+        OrientRotationToMovement_Crouching = NewOrientRotationToMovement_Crouching;
+        SetBoolParameterValue("OrientRotationToMovement_Crouching", OrientRotationToMovement_Crouching);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|GroundMovement|Crouching")
+    bool OrientRotationToMovementWhenAiming_Crouching = false;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|GroundMovement|Crouching")
+    bool GetOrientRotationToMovementWhenAiming_Crouching() { return OrientRotationToMovementWhenAiming_Crouching; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|GroundMovement|Crouching")
+    void SetOrientRotationToMovementWhenAiming_Crouching(bool NewOrientRotationToMovementWhenAiming_Crouching)
+    {
+        OrientRotationToMovementWhenAiming_Crouching = NewOrientRotationToMovementWhenAiming_Crouching;
+        SetBoolParameterValue("OrientRotationToMovementWhenAiming_Crouching", OrientRotationToMovementWhenAiming_Crouching);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|GroundMovement|Sliding")
+    float CapsuleHeightMultiplier_Sliding = 0.5f;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|GroundMovement|Sliding")
+    float GetCapsuleHeightMultiplier_Sliding() { return CapsuleHeightMultiplier_Sliding; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|GroundMovement|Sliding")
+    void SetCapsuleHeightMultiplier_Sliding(float NewCapsuleHeightMultiplier_Sliding)
+    {
+        CapsuleHeightMultiplier_Sliding = NewCapsuleHeightMultiplier_Sliding;
+        SetFloatParameterValue("CapsuleHeightMultiplier_Sliding", CapsuleHeightMultiplier_Sliding);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|GroundMovement|Sliding")
+    float SlideBoost = 1250.f;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|GroundMovement|Sliding")
+    float GetSlideBoost() { return SlideBoost; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|GroundMovement|Sliding")
+    void SetSlideBoost(float NewSlideBoost)
+    {
+        SlideBoost = NewSlideBoost;
+        SetFloatParameterValue("SlideBoost", SlideBoost);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|GroundMovement|Sliding")
+    float GroundFriction_Sliding = 0.f;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|GroundMovement|Sliding")
+    float GetGroundFriction_Sliding() { return GroundFriction_Sliding; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|GroundMovement|Sliding")
+    void SetGroundFriction_Sliding(float NewGroundFriction_Sliding)
+    {
+        GroundFriction_Sliding = NewGroundFriction_Sliding;
+        SetFloatParameterValue("GroundFriction_Sliding", GroundFriction_Sliding);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|GroundMovement|Sliding")
+    float SlideCooldown = 0.5f;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|GroundMovement|Sliding")
+    float GetSlideCooldown() { return SlideCooldown; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|GroundMovement|Sliding")
+    void SetSlideCooldown(float NewSlideCooldown)
+    {
+        SlideCooldown = NewSlideCooldown;
+        SetFloatParameterValue("SlideCooldown", SlideCooldown);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|GroundMovement|Sliding")
+    float SlideJumpCooldown = 0.35f;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|GroundMovement|Sliding")
+    float GetSlideJumpCooldown() { return SlideJumpCooldown; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|GroundMovement|Sliding")
+    void SetSlideJumpCooldown(float NewSlideJumpCooldown)
+    {
+        SlideJumpCooldown = NewSlideJumpCooldown;
+        SetFloatParameterValue("SlideJumpCooldown", SlideJumpCooldown);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|GroundMovement|Sliding")
+    float GroundTraceMultiplier_Sliding = 5.f;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|GroundMovement|Sliding")
+    float GetGroundTraceMultiplier_Sliding() { return GroundTraceMultiplier_Sliding; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|GroundMovement|Sliding")
+    void SetGroundTraceMultiplier_Sliding(float NewGroundTraceMultiplier_Sliding)
+    {
+        GroundTraceMultiplier_Sliding = NewGroundTraceMultiplier_Sliding;
+        SetFloatParameterValue("GroundTraceMultiplier_Sliding", GroundTraceMultiplier_Sliding);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|GroundMovement|Sliding")
+    bool OrientRotationToMovement_Sliding = true;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|GroundMovement|Sliding")
+    bool GetOrientRotationToMovement_Sliding() { return OrientRotationToMovement_Sliding; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|GroundMovement|Sliding")
+    void SetOrientRotationToMovement_Sliding(bool NewOrientRotationToMovement_Sliding)
+    {
+        OrientRotationToMovement_Sliding = NewOrientRotationToMovement_Sliding;
+        SetBoolParameterValue("OrientRotationToMovement_Sliding", OrientRotationToMovement_Sliding);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|GroundMovement|Sliding")
+    bool OrientRotationToMovementWhenAiming_Sliding = false;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|GroundMovement|Sliding")
+    bool GetOrientRotationToMovementWhenAiming_Sliding() { return OrientRotationToMovementWhenAiming_Sliding; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|GroundMovement|Sliding")
+    void SetOrientRotationToMovementWhenAiming_Sliding(bool NewOrientRotationToMovementWhenAiming_Sliding)
+    {
+        OrientRotationToMovementWhenAiming_Sliding = NewOrientRotationToMovementWhenAiming_Sliding;
+        SetBoolParameterValue("OrientRotationToMovementWhenAiming_Sliding", OrientRotationToMovementWhenAiming_Sliding);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|Rolling")
+    float RollBoost = 1500.f;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Rolling")
+    float GetRollBoost() { return RollBoost; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|Rolling")
+    void SetRollBoost(float NewRollBoost)
+    {
+        RollBoost = NewRollBoost;
+        SetFloatParameterValue("RollBoost", RollBoost);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|Rolling")
+    float RollDelay = 0.1;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Rolling")
+    float GetRollDelay() { return RollDelay; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|Rolling")
+    void SetRollDelay(float NewRollDelay)
+    {
+        RollDelay = NewRollDelay;
+        SetFloatParameterValue("RollDelay", RollDelay);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|Rolling")
+    float RollDuration = 0.4;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Rolling")
+    float GetRollDuration() { return RollDuration; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|Rolling")
+    void SetRollDuration(float NewRollDuration)
+    {
+        RollDuration = NewRollDuration;
+        SetFloatParameterValue("RollDuration", RollDuration);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|Rolling")
+    float RollCooldown = 0.25;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Rolling")
+    float GetRollCooldown() { return RollCooldown; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|Rolling")
+    void SetRollCooldown(float NewRollCooldown)
+    {
+        RollCooldown = NewRollCooldown;
+        SetFloatParameterValue("RollCooldown", RollCooldown);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|Rolling")
+    float RollingHorizontalVelocityConservation = 0.25f;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Rolling")
+    float GetRollingHorizontalVelocityConservation() { return RollingHorizontalVelocityConservation; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|Rolling")
+    void SetRollingHorizontalVelocityConservation(float NewRollingHorizontalVelocityConservation)
+    {
+        RollingHorizontalVelocityConservation = NewRollingHorizontalVelocityConservation;
+        SetFloatParameterValue("RollingHorizontalVelocityConservation", RollingHorizontalVelocityConservation);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|Rolling")
+    bool OrientRotationToMovement_Rolling = true;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Rolling")
+    bool GetOrientRotationToMovement_Rolling() { return OrientRotationToMovement_Rolling; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|Rolling")
+    void SetOrientRotationToMovement_Rolling(bool NewOrientRotationToMovement_Rolling)
+    {
+        OrientRotationToMovement_Rolling = NewOrientRotationToMovement_Rolling;
+        SetBoolParameterValue("OrientRotationToMovement_Rolling", OrientRotationToMovement_Rolling);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|Rolling")
+    bool OrientRotationToMovementWhenAiming_Rolling = false;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Rolling")
+    bool GetOrientRotationToMovementWhenAiming_Rolling() { return OrientRotationToMovementWhenAiming_Rolling; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|Rolling")
+    void SetOrientRotationToMovementWhenAiming_Rolling(bool NewOrientRotationToMovementWhenAiming_Rolling)
+    {
+        OrientRotationToMovementWhenAiming_Rolling = NewOrientRotationToMovementWhenAiming_Rolling;
+        SetBoolParameterValue("OrientRotationToMovementWhenAiming_Rolling", OrientRotationToMovementWhenAiming_Rolling);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|AirMovement")
+    float GroundTraceDistance = 10.f;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|AirMovement")
+    float GetGroundTraceDistance() { return GroundTraceDistance; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|AirMovement")
+    void SetGroundTraceDistance(float NewGroundTraceDistance)
+    {
+        GroundTraceDistance = NewGroundTraceDistance;
+        SetFloatParameterValue("GroundTraceDistance", GroundTraceDistance);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|AirMovement|Falling")
+    float AirControl = 0.2f;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|AirMovement|Falling")
+    float GetAirControl() { return AirControl; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|AirMovement|Falling")
+    void SetAirControl(float NewAirControl)
+    {
+        AirControl = NewAirControl;
+        SetFloatParameterValue("AirControl", AirControl);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|AirMovement|Falling")
+    float MovementInputIterpolationSpeed_Falling = 1.f;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|AirMovement|Falling")
+    float GetMovementInputIterpolationSpeed_Falling() { return MovementInputIterpolationSpeed_Falling; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|AirMovement|Falling")
+    void SetMovementInputIterpolationSpeed_Falling(float NewMovementInputIterpolationSpeed_Falling)
+    {
+        MovementInputIterpolationSpeed_Falling = NewMovementInputIterpolationSpeed_Falling;
+        SetFloatParameterValue("MovementInputIterpolationSpeed_Falling", MovementInputIterpolationSpeed_Falling);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|AirMovement|Falling")
+    bool OrientRotationToMovement_Falling = true;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|AirMovement|Falling")
+    bool GetOrientRotationToMovement_Falling() { return OrientRotationToMovement_Falling; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|AirMovement|Falling")
+    void SetOrientRotationToMovement_Falling(bool NewOrientRotationToMovement_Falling)
+    {
+        OrientRotationToMovement_Falling = NewOrientRotationToMovement_Falling;
+        SetBoolParameterValue("OrientRotationToMovement_Falling", OrientRotationToMovement_Falling);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|AirMovement|Falling")
+    bool OrientRotationToMovementWhenAiming_Falling = false;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|AirMovement|Falling")
+    bool GetOrientRotationToMovementWhenAiming_Falling() { return OrientRotationToMovementWhenAiming_Falling; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|AirMovement|Falling")
+    void SetOrientRotationToMovementWhenAiming_Falling(bool NewOrientRotationToMovementWhenAiming_Falling)
+    {
+        OrientRotationToMovementWhenAiming_Falling = NewOrientRotationToMovementWhenAiming_Falling;
+        SetBoolParameterValue("OrientRotationToMovementWhenAiming_Falling", OrientRotationToMovementWhenAiming_Falling);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|AirMovement|Jumping")
+    float JumpZVelocity = 750.f;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|AirMovement|Jumping")
+    float GetJumpZVelocity() { return JumpZVelocity; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|AirMovement|Jumping")
+    void SetJumpZVelocity(float NewJumpZVelocity)
+    {
+        JumpZVelocity = NewJumpZVelocity;
+        SetFloatParameterValue("JumpZVelocity", JumpZVelocity);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|AirMovement|Jumping")
+    float AirControl_Jumping = 0.4f;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|AirMovement|Jumping")
+    float GetAirControl_Jumping() { return AirControl_Jumping; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|AirMovement|Jumping")
+    void SetAirControl_Jumping(float NewAirControl_Jumping)
+    {
+        AirControl_Jumping = NewAirControl_Jumping;
+        SetFloatParameterValue("AirControl_Jumping", AirControl_Jumping);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|AirMovement|Jumping")
+    float HorizontalVelocityBoostFraction_Jumping = 0.5f;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|AirMovement|Jumping")
+    float GetHorizontalVelocityBoostFraction_Jumping() { return HorizontalVelocityBoostFraction_Jumping; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|AirMovement|Jumping")
+    void SetHorizontalVelocityBoostFraction_Jumping(float NewHorizontalVelocityBoostFraction_Jumping)
+    {
+        HorizontalVelocityBoostFraction_Jumping = NewHorizontalVelocityBoostFraction_Jumping;
+        SetFloatParameterValue("HorizontalVelocityBoostFraction_Jumping", HorizontalVelocityBoostFraction_Jumping);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|AirMovement|Jumping")
+    float MovementInputIterpolationSpeed_Jumping = 1.f;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|AirMovement|Jumping")
+    float GetMovementInputIterpolationSpeed_Jumping() { return MovementInputIterpolationSpeed_Jumping; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|AirMovement|Jumping")
+    void SetMovementInputIterpolationSpeed_Jumping(float NewMovementInputIterpolationSpeed_Jumping)
+    {
+        MovementInputIterpolationSpeed_Jumping = NewMovementInputIterpolationSpeed_Jumping;
+        SetFloatParameterValue("MovementInputIterpolationSpeed_Jumping", MovementInputIterpolationSpeed_Jumping);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|AirMovement|Jumping")
+    float MaxJumpBoostTime = 0.25f;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|AirMovement|Jumping")
+    float GetMaxJumpBoostTime() { return MaxJumpBoostTime; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|AirMovement|Jumping")
+    void SetMaxJumpBoostTime(float NewMaxJumpBoostTime)
+    {
+        MaxJumpBoostTime = NewMaxJumpBoostTime;
+        SetFloatParameterValue("MaxJumpBoostTime", MaxJumpBoostTime);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|AirMovement|Jumping")
+    float JumpCoolDown = 0.2f;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|AirMovement|Jumping")
+    float GetJumpCoolDown() { return JumpCoolDown; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|AirMovement|Jumping")
+    void SetJumpCoolDown(float NewJumpCoolDown)
+    {
+        JumpCoolDown = NewJumpCoolDown;
+        SetFloatParameterValue("JumpCoolDown", JumpCoolDown);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|AirMovement|Jumping")
+    bool OrientRotationToMovement_Jumping = true;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|AirMovement|Jumping")
+    bool GetOrientRotationToMovement_Jumping() { return OrientRotationToMovement_Jumping; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|AirMovement|Jumping")
+    void SetOrientRotationToMovement_Jumping(bool NewOrientRotationToMovement_Jumping)
+    {
+        OrientRotationToMovement_Jumping = NewOrientRotationToMovement_Jumping;
+        SetBoolParameterValue("OrientRotationToMovement_Jumping", OrientRotationToMovement_Jumping);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|AirMovement|Jumping")
+    bool OrientRotationToMovementWhenAiming_Jumping = false;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|AirMovement|Jumping")
+    bool GetOrientRotationToMovementWhenAiming_Jumping() { return OrientRotationToMovementWhenAiming_Jumping; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|AirMovement|Jumping")
+    void SetOrientRotationToMovementWhenAiming_Jumping(bool NewOrientRotationToMovementWhenAiming_Jumping)
+    {
+        OrientRotationToMovementWhenAiming_Jumping = NewOrientRotationToMovementWhenAiming_Jumping;
+        SetBoolParameterValue("OrientRotationToMovementWhenAiming_Jumping", OrientRotationToMovementWhenAiming_Jumping);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|Vaulting")
+    float Vaulting_WallTraceDistance = 150.f;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Vaulting")
+    float GetVaulting_WallTraceDistance() { return Vaulting_WallTraceDistance; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|Vaulting")
+    void SetVaulting_WallTraceDistance(float NewVaulting_WallTraceDistance)
+    {
+        Vaulting_WallTraceDistance = NewVaulting_WallTraceDistance;
+        SetFloatParameterValue("Vaulting_WallTraceDistance", Vaulting_WallTraceDistance);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|Vaulting")
+    float Vaulting_InWallExtention = 25.f;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Vaulting")
+    float GetVaulting_InWallExtention() { return Vaulting_InWallExtention; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|Vaulting")
+    void SetVaulting_InWallExtention(float NewVaulting_InWallExtention)
+    {
+        Vaulting_InWallExtention = NewVaulting_InWallExtention;
+        SetFloatParameterValue("Vaulting_InWallExtention", Vaulting_InWallExtention);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|Vaulting")
+    float Vaulting_MaxWallHeight = 250.f;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Vaulting")
+    float GetVaulting_MaxWallHeight() { return Vaulting_MaxWallHeight; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|Vaulting")
+    void SetVaulting_MaxWallHeight(float NewVaulting_MaxWallHeight)
+    {
+        Vaulting_MaxWallHeight = NewVaulting_MaxWallHeight;
+        SetFloatParameterValue("Vaulting_MaxWallHeight", Vaulting_MaxWallHeight);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|Vaulting")
+    float Vaulting_MinGroundLevelness = 0.75f;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Vaulting")
+    float GetVaulting_MinGroundLevelness() { return Vaulting_MinGroundLevelness; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|Vaulting")
+    void SetVaulting_MinGroundLevelness(float NewVaulting_MinGroundLevelness)
+    {
+        Vaulting_MinGroundLevelness = NewVaulting_MinGroundLevelness;
+        SetFloatParameterValue("Vaulting_MinGroundLevelness", Vaulting_MinGroundLevelness);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|Vaulting")
+    float Vaulting_GroundCheckTollerance = 5.f;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Vaulting")
+    float GetVaulting_GroundCheckTollerance() { return Vaulting_GroundCheckTollerance; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|Vaulting")
+    void SetVaulting_GroundCheckTollerance(float NewVaulting_GroundCheckTollerance)
+    {
+        Vaulting_GroundCheckTollerance = NewVaulting_GroundCheckTollerance;
+        SetFloatParameterValue("Vaulting_GroundCheckTollerance", Vaulting_GroundCheckTollerance);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|Vaulting")
+    float VaultingSnapAnimationPlaySpeed = 2.f;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Vaulting")
+    float GetVaultingSnapAnimationPlaySpeed() { return VaultingSnapAnimationPlaySpeed; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|Vaulting")
+    void SetVaultingSnapAnimationPlaySpeed(float NewVaultingSnapAnimationPlaySpeed)
+    {
+        VaultingSnapAnimationPlaySpeed = NewVaultingSnapAnimationPlaySpeed;
+        SetFloatParameterValue("VaultingSnapAnimationPlaySpeed", VaultingSnapAnimationPlaySpeed);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|Vaulting")
+    float VaultingDuration = 0.3f;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Vaulting")
+    float GetVaultingDuration() { return VaultingDuration; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|Vaulting")
+    void SetVaultingDuration(float NewVaultingDuration)
+    {
+        VaultingDuration = NewVaultingDuration;
+        SetFloatParameterValue("VaultingDuration", VaultingDuration);
+    }
+
+protected:
+
+    // Called when the game starts
+    virtual void BeginPlay() override
+    {
+        Super::BeginPlay();
+
+        SetWalkingSpeed(WalkingSpeed);
+        SetMovementInputIterpolationSpeed(MovementInputIterpolationSpeed);
+        SetOrientRotationToMovement(OrientRotationToMovement);
+        SetOrientRotationToMovementWhenAiming(OrientRotationToMovementWhenAiming);
+        SetRunningSpeed(RunningSpeed);
+        SetMovementInputIterpolationSpeed_Running(MovementInputIterpolationSpeed_Running);
+        SetOrientRotationToMovement_Running(OrientRotationToMovement_Running);
+        SetOrientRotationToMovementWhenAiming_Running(OrientRotationToMovementWhenAiming_Running);
+        SetCapsuleHeightMultiplier_Crouching(CapsuleHeightMultiplier_Crouching);
+        SetCrouchWalkingSpeed(CrouchWalkingSpeed);
+        SetMovementInputIterpolationSpeed_Crouching(MovementInputIterpolationSpeed_Crouching);
+        SetOrientRotationToMovement_Crouching(OrientRotationToMovement_Crouching);
+        SetOrientRotationToMovementWhenAiming_Crouching(OrientRotationToMovementWhenAiming_Crouching);
+        SetCapsuleHeightMultiplier_Sliding(CapsuleHeightMultiplier_Sliding);
+        SetSlideBoost(SlideBoost);
+        SetGroundFriction_Sliding(GroundFriction_Sliding);
+        SetSlideCooldown(SlideCooldown);
+        SetSlideJumpCooldown(SlideJumpCooldown);
+        SetGroundTraceMultiplier_Sliding(GroundTraceMultiplier_Sliding);
+        SetOrientRotationToMovement_Sliding(OrientRotationToMovement_Sliding);
+        SetOrientRotationToMovementWhenAiming_Sliding(OrientRotationToMovementWhenAiming_Sliding);
+        SetRollBoost(RollBoost);
+        SetRollDelay(RollDelay);
+        SetRollDuration(RollDuration);
+        SetRollCooldown(RollCooldown);
+        SetRollingHorizontalVelocityConservation(RollingHorizontalVelocityConservation);
+        SetOrientRotationToMovement_Rolling(OrientRotationToMovement_Rolling);
+        SetOrientRotationToMovementWhenAiming_Rolling(OrientRotationToMovementWhenAiming_Rolling);
+        SetGroundTraceDistance(GroundTraceDistance);
+        SetAirControl(AirControl);
+        SetMovementInputIterpolationSpeed_Falling(MovementInputIterpolationSpeed_Falling);
+        SetOrientRotationToMovement_Falling(OrientRotationToMovement_Falling);
+        SetOrientRotationToMovementWhenAiming_Falling(OrientRotationToMovementWhenAiming_Falling);
+        SetJumpZVelocity(JumpZVelocity);
+        SetAirControl_Jumping(AirControl_Jumping);
+        SetHorizontalVelocityBoostFraction_Jumping(HorizontalVelocityBoostFraction_Jumping);
+        SetMovementInputIterpolationSpeed_Jumping(MovementInputIterpolationSpeed_Jumping);
+        SetMaxJumpBoostTime(MaxJumpBoostTime);
+        SetJumpCoolDown(JumpCoolDown);
+        SetOrientRotationToMovement_Jumping(OrientRotationToMovement_Jumping);
+        SetOrientRotationToMovementWhenAiming_Jumping(OrientRotationToMovementWhenAiming_Jumping);
+        SetVaulting_WallTraceDistance(Vaulting_WallTraceDistance);
+        SetVaulting_InWallExtention(Vaulting_InWallExtention);
+        SetVaulting_MaxWallHeight(Vaulting_MaxWallHeight);
+        SetVaulting_MinGroundLevelness(Vaulting_MinGroundLevelness);
+        SetVaulting_GroundCheckTollerance(Vaulting_GroundCheckTollerance);
+        SetVaultingSnapAnimationPlaySpeed(VaultingSnapAnimationPlaySpeed);
+        SetVaultingDuration(VaultingDuration);
+    }
+};
