@@ -163,7 +163,7 @@ bool USCM_VaultingLayer::CheckCanVault()
 
 				// Check if character can fit
 				FVector CheckLocaiton = HeightHit.Location + FVector(0.f, 0.f, Capsule->GetScaledCapsuleHalfHeight() + GroundCheckTollerance);
-				VaultLocation = CheckLocaiton - FVector(0.f, 0.f, GroundCheckTollerance) + WallNormal * InWallExtention; // Caching vault location
+				VaultLocation = HeightHit.Location + WallNormal * InWallExtention * 2.f; // Caching vault location
 
 				if (!GetWorld()->OverlapBlockingTestByChannel(	CheckLocaiton,
 																Character->GetActorQuat(),
