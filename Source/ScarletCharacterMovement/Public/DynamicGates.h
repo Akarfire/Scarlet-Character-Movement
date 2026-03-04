@@ -139,6 +139,21 @@ public:
 		check(ValueP);
 		return *ValueP;
 	}
+
+	// DEBUG
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "CLASS|DynamicGates|Debug")
+	void GetAllDynamicGateNames(TArray<FName>& OutNames) { DynamicGates.GetKeys(OutNames); }
+
+	// DEBUG
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "CLASS|DynamicGates|Debug")
+	void GetDynamicGateValueNames(const FName& GateName, TArray<FName>& OutNames)
+	{
+		FSCM_DynamicGate* GateP = DynamicGates.Find(GateName);
+		if (GateP)
+		{
+			GateP->GateValues.GetKeys(OutNames);
+		}
+	}
 */
 
 
