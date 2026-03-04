@@ -15,6 +15,7 @@ void USCM_Rolling::SetupParameters_Implementation()
 	SM->RegisterFloatParameter("RollDelay", RollDelay, true, this, "OnParameterValueChanged");
 	SM->RegisterFloatParameter("RollDuration", RollDuration, true, this, "OnParameterValueChanged");
 	SM->RegisterFloatParameter("RollCooldown", RollCooldown, true, this, "OnParameterValueChanged");
+	SM->RegisterFloatParameter("RollingHorizontalVelocityConservation", HorizontalVelocityConservation, true, this, "OnParameterValueChanged");
 
 	SM->RegisterBoolParameter("OrientRotationToMovement_Rolling", OrientRotationToMovement, true, this, "OnParameterValueChanged");
 	SM->RegisterBoolParameter("OrientRotationToMovementWhenAiming_Rolling", OrientRotationToMovementWhenAiming, true, this, "OnParameterValueChanged");
@@ -47,6 +48,9 @@ void USCM_Rolling::OnParameterValueChanged(const FName& ParameterName)
 {
 	if (ParameterName == "RollBoost")
 		RollBoost = GetScarletMovement()->GetFloatParameterValue("RollBoost");
+
+	else if (ParameterName == "RollingHorizontalVelocityConservation")
+		HorizontalVelocityConservation = GetScarletMovement()->GetFloatParameterValue("RollingHorizontalVelocityConservation");
 
 	else if (ParameterName == "RollDelay")
 	{
@@ -94,6 +98,8 @@ void USCM_Rolling::OnTimerIsOver(FName TimerName)
 void USCM_Rolling::StartRoll()
 {
 	FVector BoostVector = GetScarletMovement()->GetRawMovementInputVector() * RollBoost;
+
+	GetCharacterMovement()->Velocity = GetCharacterMovement()->Velocity * HorizontalVelocityConservation;
 	GetCharacterMovement()->GetCharacterOwner()->LaunchCharacter(BoostVector, false, false);
 
 	// Character rotation

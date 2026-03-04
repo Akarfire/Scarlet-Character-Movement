@@ -35,6 +35,7 @@ protected:
 protected:
 
 	// Parameters
+	float HorizontalVelocityConservation = 0.25f;
 	float RollBoost = 1500.f;
 	float RollDelay = 0.1f;
 	float RollDuration = 0.4f;
@@ -133,6 +134,24 @@ public:
 
 	UFUNCTION()
 	void OnTimerIsOver(FName InTimerName) {}
+
+	// Fired when this movement layer is entered
+	virtual void OnLayerEntered_Implementation()
+	{
+		if (Condition_LowerLevel_Rolling())
+			if (GetActiveState() != (uint8)ESCM_RollingLayerStates::Rolling)
+			{
+				GetState(GetActiveState())->ExitState();
+				ActiveState = (uint8)ESCM_RollingLayerStates::Rolling;
+			}
+	}
+
+	//  Fired when this movement layer is exited
+	virtual void OnLayerExit_Implementation()
+	{
+		ForceCallStateTransition((uint8)ESCM_RollingLayerStates::LowerLevel);
+		UpdateStateMachine(0.f);
+	}
 
 	// TRANSITION CONDITIONS
 	// Must be a UFUNCTION, will not work otherwise, and no, it will not crash, you will just be stuck there with no real signs of errors, so yeah
