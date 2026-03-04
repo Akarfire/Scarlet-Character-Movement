@@ -12,8 +12,11 @@
 // Fires off when custom MPAS_Handler parameter value is changed
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMovementParameterValueChanged, FName, InParameterName);
 
+// Fires off when Movement State has changed
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMovementStateChanged, FString, NewMovementStateName, USCM_MovementStateBase*, NewMovementState);
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+
+UCLASS(Blueprintable, BlueprintType, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class SCARLETCHARACTERMOVEMENT_API UScarletMovementComponent : public UActorComponent
 {
 	GENERATED_BODY()
@@ -41,6 +44,9 @@ public:
 	// Pointer to the active state, should only be modified by movement state machines
 	USCM_MovementStateBase* ActiveState;
 
+	// DO NOT CALL MANUALLY!
+	void SetActiveState(USCM_MovementStateBase* NewActiveState);
+
 	// Layers of the movement state machine stack, 0 - lowest layer
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category="Default")
 	TArray<TSubclassOf<class USCM_MovementStateMachine>> MovementStateMachineStackClasses;
@@ -48,6 +54,10 @@ public:
 	// If set to true, attempts to automatically locate an existing character movement component
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default")
 	bool AutoDetectCharacterMovement = true;
+
+	// Fires off when Movement State has changed
+	UPROPERTY(BlueprintAssignable, Category = "Delegates")
+	FOnMovementStateChanged OnMovementStateChanged;
 
 
 protected:
@@ -126,6 +136,10 @@ public:
 	// Returns Movement Input Vector
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Input")
 	FVector GetMovementInputVector() { return MovementInputVector; }
+
+	// Returns Movement Input Vector
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Input")
+	FVector GetRawMovementInputVector() { return TargetMovementInputVector; }
 
 	// Sets Camera Rotation Input
 	UFUNCTION(BlueprintCallable, Category = "ScarletMovement|Input")
@@ -244,6 +258,27 @@ public:
 	// Returns a Rotator-type input value (returns default value if no such input is found)
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Input")
 	FRotator GetRotatorInputValue(const FName& InInputName) { return GetInputValue<FRotator>(RotatorInputStorage, InInputName); }
+
+
+	// DEBUG
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Input|Debug")
+	void GetAllBoolInputNames(TArray<FName>& OutNames) { BoolInputStorage.GetKeys(OutNames); }
+
+	// DEBUG
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Input|Debug")
+	void GetAllIntInputNames(TArray<FName>& OutNames) { IntInputStorage.GetKeys(OutNames); }
+
+	// DEBUG
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Input|Debug")
+	void GetAllFloatInputNames(TArray<FName>& OutNames) { FloatInputStorage.GetKeys(OutNames); }
+
+	// DEBUG
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Input|Debug")
+	void GetAllVectorInputNames(TArray<FName>& OutNames) { VectorInputStorage.GetKeys(OutNames); }
+
+	// DEBUG
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Input|Debug")
+	void GetAllRotatorInputNames(TArray<FName>& OutNames) { RotatorInputStorage.GetKeys(OutNames); }
 
 
 
@@ -456,5 +491,20 @@ public:
 		bool* ValueP = GateP->GetNamedGateValue(ValueName);
 		check(ValueP);
 		return *ValueP;
+	}
+
+	// DEBUG
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|DynamicGates|Debug")
+	void GetAllDynamicGateNames(TArray<FName>& OutNames) { DynamicGates.GetKeys(OutNames); }
+
+	// DEBUG
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|DynamicGates|Debug")
+	void GetDynamicGateValueNames(const FName& GateName, TArray<FName>& OutNames)
+	{
+		FSCM_DynamicGate* GateP = DynamicGates.Find(GateName);
+		if (GateP)
+		{
+			GateP->GateValues.GetKeys(OutNames);
+		}
 	}
 };

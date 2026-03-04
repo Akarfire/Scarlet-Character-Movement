@@ -20,6 +20,14 @@ UScarletMovementComponent::UScarletMovementComponent()
 	bAutoActivate = true;
 }
 
+void UScarletMovementComponent::SetActiveState(USCM_MovementStateBase* NewActiveState)
+{
+	if (ActiveState != NewActiveState && NewActiveState)
+		OnMovementStateChanged.Broadcast(NewActiveState->GetDisplayName(), NewActiveState);
+
+	ActiveState = NewActiveState;
+}
+
 
 // Called when the game starts
 void UScarletMovementComponent::BeginPlay()
