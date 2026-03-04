@@ -137,9 +137,9 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Input")
 	FVector GetMovementInputVector() { return MovementInputVector; }
 
-	// Returns Movement Input Vector
+	// Returns Uninterpolated Movement Input Vector
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Input")
-	FVector GetRawMovementInputVector() { return TargetMovementInputVector; }
+	FVector GetRawMovementInputVector() { return EnableMovementInputInterpolation ? TargetMovementInputVector : MovementInputVector; }
 
 	// Sets Camera Rotation Input
 	UFUNCTION(BlueprintCallable, Category = "ScarletMovement|Input")
@@ -148,6 +148,10 @@ public:
 	// Returns Camera Rotation Input
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Input")
 	FRotator GetCameraRotation() { return CameraRotation; }
+
+	// Returns Uninterpolated Camera Rotation Vector
+	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Input")
+	FRotator GetRawCameraRotation() { return EnableCameraRotationInputInterpolation ? TargetCameraRotation : CameraRotation; }
 
 
 // Interpolation & Processing
