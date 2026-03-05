@@ -6,6 +6,10 @@ bool:OrientRotationToMovementWhenAiming:false
 
 #GroundMovement|Running
 float:RunningSpeed:1000.f
+float:RunningMaxSpeed:900.f
+float:RunningSpeedBuildUp:50.f
+float:RunningSpeedBuildUpWindow:0.9f
+float:RunningSpeedDrop:100.f;
 float:MovementInputIterpolationSpeed_Running:2.5f
 bool:OrientRotationToMovement_Running:true
 bool:OrientRotationToMovementWhenAiming_Running:true
@@ -24,6 +28,7 @@ float:GroundFriction_Sliding:0.f
 float:SlideCooldown:0.5f
 float:SlideJumpCooldown:0.35f
 float:GroundTraceMultiplier_Sliding:5.f
+float:SlideVelocityConservation:0.75f
 bool:OrientRotationToMovement_Sliding:true
 bool:OrientRotationToMovementWhenAiming_Sliding:false
 
@@ -33,6 +38,8 @@ float:RollDelay:0.1f
 float:RollDuration:0.4f
 float:RollCooldown:0.25f
 float:RollingHorizontalVelocityConservation:0.25f
+float:RollingGravityScale:10.f
+float:GroundTraceMultiplier_Rolling:5.f
 bool:OrientRotationToMovement_Rolling:true
 bool:OrientRotationToMovementWhenAiming_Rolling:false
 
@@ -48,6 +55,7 @@ bool:OrientRotationToMovementWhenAiming_Falling:false
 #AirMovement|Jumping
 float:JumpZVelocity:750.f
 float:AirControl_Jumping:0.4f
+float:GroundTraceMultiplier_Jumping:0.f
 float:HorizontalVelocityBoostFraction_Jumping:0.5f
 float:MovementInputIterpolationSpeed_Jumping:1.f
 float:MaxJumpBoostTime:0.25f
@@ -63,3 +71,14 @@ float:Vaulting_MinGroundLevelness:0.75f
 float:Vaulting_GroundCheckTollerance:5.f
 float:VaultingSnapAnimationPlaySpeed:2.f
 float:VaultingDuration:0.3f
+
+/Input:bool:Run
+/Input:bool:Crouch
+/Input:bool:Jump
+/Input:bool:Roll
+/Input:bool:Vault
+/Input:bool:Aim
+
+/DynamicGate:CanJump:CanJump:And:true
+/DynamicGate:CanSlide:CanSlide:And:true
+/DynamicGate:CanVault:CanVault:And:true
