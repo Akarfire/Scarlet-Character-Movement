@@ -16,6 +16,8 @@ void USCM_Rolling::SetupParameters_Implementation()
 	SM->RegisterFloatParameter("RollDuration", RollDuration, true, this, "OnParameterValueChanged");
 	SM->RegisterFloatParameter("RollCooldown", RollCooldown, true, this, "OnParameterValueChanged");
 	SM->RegisterFloatParameter("RollingHorizontalVelocityConservation", HorizontalVelocityConservation, true, this, "OnParameterValueChanged");
+	SM->RegisterFloatParameter("GroundTraceMultiplier_Rolling", GroundTraceMultiplier, true, this, "OnParameterValueChanged");
+	SM->RegisterFloatParameter("RollingGravityScale", RollingGravityScale, true, this, "OnParameterValueChanged");
 
 	SM->RegisterBoolParameter("OrientRotationToMovement_Rolling", OrientRotationToMovement, true, this, "OnParameterValueChanged");
 	SM->RegisterBoolParameter("OrientRotationToMovementWhenAiming_Rolling", OrientRotationToMovementWhenAiming, true, this, "OnParameterValueChanged");
@@ -51,6 +53,20 @@ void USCM_Rolling::OnParameterValueChanged(const FName& ParameterName)
 
 	else if (ParameterName == "RollingHorizontalVelocityConservation")
 		HorizontalVelocityConservation = GetScarletMovement()->GetFloatParameterValue("RollingHorizontalVelocityConservation");
+
+	else if (ParameterName == "RollingGravityScale")
+		RollingGravityScale = GetScarletMovement()->GetFloatParameterValue("RollingGravityScale");
+
+	else if (ParameterName == "GroundTraceMultiplier_Rolling")
+	{
+		float OldGroundTraceMultiplier = GroundTraceMultiplier;
+		GroundTraceMultiplier = GetScarletMovement()->GetFloatParameterValue("GroundTraceMultiplier_Rolling");
+		if (GetStateMachine()->GetActiveState() == GetStateID())
+		{
+			GetScarletMovement()->SetFloatParameterValue("GroundTraceDistance", GetScarletMovement()->GetFloatParameterValue("GroundTraceDistance") / OldGroundTraceMultiplier);
+			GetScarletMovement()->SetFloatParameterValue("GroundTraceDistance", GetScarletMovement()->GetFloatParameterValue("GroundTraceDistance") * GroundTraceMultiplier);
+		}
+	}
 
 	else if (ParameterName == "RollDelay")
 	{
@@ -116,6 +132,8 @@ void USCM_Rolling::EnterState_Implementation()
 	CM->SetMovementMode(EMovementMode::MOVE_Walking);
 	CachedGroundFriction = CM->GroundFriction;
 	CM->GroundFriction = 0.f;
+	CachedGravityScale = CM->GravityScale;
+	CM->GravityScale = RollingGravityScale;
 
 	// Dynamic gates
 	if (GetScarletMovement()->IsDynamicGateValid("CanJump"))
@@ -123,6 +141,9 @@ void USCM_Rolling::EnterState_Implementation()
 
 	if (GetScarletMovement()->IsDynamicGateValid("StopRoll"))
 		GetScarletMovement()->SetDynamicGateNamedValue("StopRoll", "RollDuration", false);
+
+	// Ground trace distance
+	GetScarletMovement()->SetFloatParameterValue("GroundTraceDistance", GetScarletMovement()->GetFloatParameterValue("GroundTraceDistance") * GroundTraceMultiplier);
 
 	// Start rolling
 	// RollDelay -> ... Timer ... -> StartRoll();
@@ -132,6 +153,7 @@ void USCM_Rolling::EnterState_Implementation()
 void USCM_Rolling::ExitState_Implementation()
 {
 	GetCharacterMovement()->GroundFriction = CachedGroundFriction;
+	GetCharacterMovement()->GravityScale = CachedGravityScale;
 
 	// Dynamic gates
 	if (GetScarletMovement()->IsDynamicGateValid("CanJump"))
@@ -139,6 +161,9 @@ void USCM_Rolling::ExitState_Implementation()
 
 	if (GetScarletMovement()->IsDynamicGateValid("CanRoll"))
 		GetScarletMovement()->SetDynamicGateNamedValue("CanRoll", "RollCooldown", false);
+
+	// Ground trace distance
+	GetScarletMovement()->SetFloatParameterValue("GroundTraceDistance", GetScarletMovement()->GetFloatParameterValue("GroundTraceDistance") / GroundTraceMultiplier);
 
 	GetScarletMovement()->GetTimerController()->StartTimer("RollCooldown");
 }

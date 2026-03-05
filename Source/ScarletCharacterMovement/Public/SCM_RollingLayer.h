@@ -31,6 +31,7 @@ class SCARLETCHARACTERMOVEMENT_API USCM_Rolling : public USCM_MovementStateBase
 
 protected:
 	float CachedGroundFriction = 0.f;
+	float CachedGravityScale = 1.f;
 
 protected:
 
@@ -40,6 +41,8 @@ protected:
 	float RollDelay = 0.1f;
 	float RollDuration = 0.4f;
 	float RollCooldown = 0.25;
+	float GroundTraceMultiplier = 5.f;
+	float RollingGravityScale = 10.f;
 	bool OrientRotationToMovement = true;
 	bool OrientRotationToMovementWhenAiming = false;
 
