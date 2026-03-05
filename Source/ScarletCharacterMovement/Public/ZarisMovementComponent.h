@@ -38,6 +38,83 @@ public:
 	}
 
 public:
+
+    // Input
+    
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|Input")
+    void SetRunInput(bool Input) { SetBoolInputValue("Run", Input); }
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Input")
+    bool GetRunInput() { return GetBoolInputValue("Run"); }
+
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|Input")
+    void SetCrouchInput(bool Input) { SetBoolInputValue("Crouch", Input); }
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Input")
+    bool GetCrouchInput() { return GetBoolInputValue("Crouch"); }
+
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|Input")
+    void SetJumpInput(bool Input) { SetBoolInputValue("Jump", Input); }
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Input")
+    bool GetJumpInput() { return GetBoolInputValue("Jump"); }
+
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|Input")
+    void SetRollInput(bool Input) { SetBoolInputValue("Roll", Input); }
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Input")
+    bool GetRollInput() { return GetBoolInputValue("Roll"); }
+
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|Input")
+    void SetVaultInput(bool Input) { SetBoolInputValue("Vault", Input); }
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Input")
+    bool GetVaultInput() { return GetBoolInputValue("Vault"); }
+
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|Input")
+    void SetAimInput(bool Input) { SetBoolInputValue("Aim", Input); }
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Input")
+    bool GetAimInput() { return GetBoolInputValue("Aim"); }
+
+
+    // Dynamic gates
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|DynamicGates")
+    bool CanJump = true;
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|DynamicGates")
+    void SetCanJump(bool InCanJump) { SetDynamicGateNamedValue("CanJump", "CanJump", InCanJump); }
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|DynamicGates")
+    bool GetCanJump() { return GetDynamicGateNamedValue("CanJump", "CanJump"); }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|DynamicGates")
+    bool CanSlide = true;
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|DynamicGates")
+    void SetCanSlide(bool InCanSlide) { SetDynamicGateNamedValue("CanSlide", "CanSlide", InCanSlide); }
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|DynamicGates")
+    bool GetCanSlide() { return GetDynamicGateNamedValue("CanSlide", "CanSlide"); }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|DynamicGates")
+    bool CanVault = true;
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|DynamicGates")
+    void SetCanVault(bool InCanVault) { SetDynamicGateNamedValue("CanVault", "CanVault", InCanVault); }
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|DynamicGates")
+    bool GetCanVault() { return GetDynamicGateNamedValue("CanVault", "CanVault"); }
+
+
 	// Parameters
 
     UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|GroundMovement|Walking")
@@ -107,6 +184,62 @@ public:
     {
         RunningSpeed = NewRunningSpeed;
         SetFloatParameterValue("RunningSpeed", RunningSpeed);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|GroundMovement|Running")
+    float RunningMaxSpeed = 900.f;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|GroundMovement|Running")
+    float GetRunningMaxSpeed() { return RunningMaxSpeed; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|GroundMovement|Running")
+    void SetRunningMaxSpeed(float NewRunningMaxSpeed)
+    {
+        RunningMaxSpeed = NewRunningMaxSpeed;
+        SetFloatParameterValue("RunningMaxSpeed", RunningMaxSpeed);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|GroundMovement|Running")
+    float RunningSpeedBuildUp = 50.f;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|GroundMovement|Running")
+    float GetRunningSpeedBuildUp() { return RunningSpeedBuildUp; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|GroundMovement|Running")
+    void SetRunningSpeedBuildUp(float NewRunningSpeedBuildUp)
+    {
+        RunningSpeedBuildUp = NewRunningSpeedBuildUp;
+        SetFloatParameterValue("RunningSpeedBuildUp", RunningSpeedBuildUp);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|GroundMovement|Running")
+    float RunningSpeedBuildUpWindow = 0.9f;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|GroundMovement|Running")
+    float GetRunningSpeedBuildUpWindow() { return RunningSpeedBuildUpWindow; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|GroundMovement|Running")
+    void SetRunningSpeedBuildUpWindow(float NewRunningSpeedBuildUpWindow)
+    {
+        RunningSpeedBuildUpWindow = NewRunningSpeedBuildUpWindow;
+        SetFloatParameterValue("RunningSpeedBuildUpWindow", RunningSpeedBuildUpWindow);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|GroundMovement|Running")
+    float RunningSpeedDrop = 100.f;;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|GroundMovement|Running")
+    float GetRunningSpeedDrop() { return RunningSpeedDrop; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|GroundMovement|Running")
+    void SetRunningSpeedDrop(float NewRunningSpeedDrop)
+    {
+        RunningSpeedDrop = NewRunningSpeedDrop;
+        SetFloatParameterValue("RunningSpeedDrop", RunningSpeedDrop);
     }
 
 
@@ -307,6 +440,20 @@ public:
 
 
     UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|GroundMovement|Sliding")
+    float SlideVelocityConservation = 0.75f;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|GroundMovement|Sliding")
+    float GetSlideVelocityConservation() { return SlideVelocityConservation; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|GroundMovement|Sliding")
+    void SetSlideVelocityConservation(float NewSlideVelocityConservation)
+    {
+        SlideVelocityConservation = NewSlideVelocityConservation;
+        SetFloatParameterValue("SlideVelocityConservation", SlideVelocityConservation);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|GroundMovement|Sliding")
     bool OrientRotationToMovement_Sliding = true;
 
     UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|GroundMovement|Sliding")
@@ -349,7 +496,7 @@ public:
 
 
     UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|Rolling")
-    float RollDelay = 0.1;
+    float RollDelay = 0.1f;
 
     UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Rolling")
     float GetRollDelay() { return RollDelay; }
@@ -363,7 +510,7 @@ public:
 
 
     UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|Rolling")
-    float RollDuration = 0.4;
+    float RollDuration = 0.4f;
 
     UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Rolling")
     float GetRollDuration() { return RollDuration; }
@@ -377,7 +524,7 @@ public:
 
 
     UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|Rolling")
-    float RollCooldown = 0.25;
+    float RollCooldown = 0.25f;
 
     UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Rolling")
     float GetRollCooldown() { return RollCooldown; }
@@ -401,6 +548,34 @@ public:
     {
         RollingHorizontalVelocityConservation = NewRollingHorizontalVelocityConservation;
         SetFloatParameterValue("RollingHorizontalVelocityConservation", RollingHorizontalVelocityConservation);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|Rolling")
+    float RollingGravityScale = 10.f;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Rolling")
+    float GetRollingGravityScale() { return RollingGravityScale; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|Rolling")
+    void SetRollingGravityScale(float NewRollingGravityScale)
+    {
+        RollingGravityScale = NewRollingGravityScale;
+        SetFloatParameterValue("RollingGravityScale", RollingGravityScale);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|Rolling")
+    float GroundTraceMultiplier_Rolling = 5.f;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Rolling")
+    float GetGroundTraceMultiplier_Rolling() { return GroundTraceMultiplier_Rolling; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|Rolling")
+    void SetGroundTraceMultiplier_Rolling(float NewGroundTraceMultiplier_Rolling)
+    {
+        GroundTraceMultiplier_Rolling = NewGroundTraceMultiplier_Rolling;
+        SetFloatParameterValue("GroundTraceMultiplier_Rolling", GroundTraceMultiplier_Rolling);
     }
 
 
@@ -527,6 +702,20 @@ public:
     {
         AirControl_Jumping = NewAirControl_Jumping;
         SetFloatParameterValue("AirControl_Jumping", AirControl_Jumping);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|AirMovement|Jumping")
+    float GroundTraceMultiplier_Jumping = 0.f;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|AirMovement|Jumping")
+    float GetGroundTraceMultiplier_Jumping() { return GroundTraceMultiplier_Jumping; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|AirMovement|Jumping")
+    void SetGroundTraceMultiplier_Jumping(float NewGroundTraceMultiplier_Jumping)
+    {
+        GroundTraceMultiplier_Jumping = NewGroundTraceMultiplier_Jumping;
+        SetFloatParameterValue("GroundTraceMultiplier_Jumping", GroundTraceMultiplier_Jumping);
     }
 
 
@@ -723,6 +912,10 @@ protected:
         SetOrientRotationToMovement(OrientRotationToMovement);
         SetOrientRotationToMovementWhenAiming(OrientRotationToMovementWhenAiming);
         SetRunningSpeed(RunningSpeed);
+        SetRunningMaxSpeed(RunningMaxSpeed);
+        SetRunningSpeedBuildUp(RunningSpeedBuildUp);
+        SetRunningSpeedBuildUpWindow(RunningSpeedBuildUpWindow);
+        SetRunningSpeedDrop(RunningSpeedDrop);
         SetMovementInputIterpolationSpeed_Running(MovementInputIterpolationSpeed_Running);
         SetOrientRotationToMovement_Running(OrientRotationToMovement_Running);
         SetOrientRotationToMovementWhenAiming_Running(OrientRotationToMovementWhenAiming_Running);
@@ -737,6 +930,7 @@ protected:
         SetSlideCooldown(SlideCooldown);
         SetSlideJumpCooldown(SlideJumpCooldown);
         SetGroundTraceMultiplier_Sliding(GroundTraceMultiplier_Sliding);
+        SetSlideVelocityConservation(SlideVelocityConservation);
         SetOrientRotationToMovement_Sliding(OrientRotationToMovement_Sliding);
         SetOrientRotationToMovementWhenAiming_Sliding(OrientRotationToMovementWhenAiming_Sliding);
         SetRollBoost(RollBoost);
@@ -744,6 +938,8 @@ protected:
         SetRollDuration(RollDuration);
         SetRollCooldown(RollCooldown);
         SetRollingHorizontalVelocityConservation(RollingHorizontalVelocityConservation);
+        SetRollingGravityScale(RollingGravityScale);
+        SetGroundTraceMultiplier_Rolling(GroundTraceMultiplier_Rolling);
         SetOrientRotationToMovement_Rolling(OrientRotationToMovement_Rolling);
         SetOrientRotationToMovementWhenAiming_Rolling(OrientRotationToMovementWhenAiming_Rolling);
         SetGroundTraceDistance(GroundTraceDistance);
@@ -753,6 +949,7 @@ protected:
         SetOrientRotationToMovementWhenAiming_Falling(OrientRotationToMovementWhenAiming_Falling);
         SetJumpZVelocity(JumpZVelocity);
         SetAirControl_Jumping(AirControl_Jumping);
+        SetGroundTraceMultiplier_Jumping(GroundTraceMultiplier_Jumping);
         SetHorizontalVelocityBoostFraction_Jumping(HorizontalVelocityBoostFraction_Jumping);
         SetMovementInputIterpolationSpeed_Jumping(MovementInputIterpolationSpeed_Jumping);
         SetMaxJumpBoostTime(MaxJumpBoostTime);
@@ -766,5 +963,18 @@ protected:
         SetVaulting_GroundCheckTollerance(Vaulting_GroundCheckTollerance);
         SetVaultingSnapAnimationPlaySpeed(VaultingSnapAnimationPlaySpeed);
         SetVaultingDuration(VaultingDuration);
+
+
+        if (!IsDynamicGateValid("CanJump"))
+            RegisterDynamicGate("CanJump", ESCM_DynamicGateRule::And, true);
+        SetDynamicGateNamedValue("CanJump", "CanJump", CanJump);
+
+        if (!IsDynamicGateValid("CanSlide"))
+            RegisterDynamicGate("CanSlide", ESCM_DynamicGateRule::And, true);
+        SetDynamicGateNamedValue("CanSlide", "CanSlide", CanSlide);
+
+        if (!IsDynamicGateValid("CanVault"))
+            RegisterDynamicGate("CanVault", ESCM_DynamicGateRule::And, true);
+        SetDynamicGateNamedValue("CanVault", "CanVault", CanVault);
     }
 };
