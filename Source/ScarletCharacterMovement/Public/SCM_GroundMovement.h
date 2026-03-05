@@ -75,6 +75,11 @@ class SCARLETCHARACTERMOVEMENT_API USCM_Running : public USCM_MovementStateBase
 	// Parameters
 
 	float RunningSpeed = 700.0;
+	float RunningMaxSpeed = 900.f;
+	float RunningSpeedBuildUp = 50.f;
+	float RunningSpeedBuildUpWindow = 0.9f;
+	float RunningSpeedDrop = 100.f;
+
 	float MovementInputIterpolationSpeed = 2.5f;
 	bool OrientRotationToMovement = true;
 	bool OrientRotationToMovementWhenAiming = true;

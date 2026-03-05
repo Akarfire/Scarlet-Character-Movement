@@ -78,6 +78,10 @@ void USCM_Running::SetupParameters_Implementation()
 	UScarletMovementComponent* SM = GetScarletMovement();
 
 	SM->RegisterFloatParameter("RunningSpeed", RunningSpeed, true, this, "OnParameterValueChanged");
+	SM->RegisterFloatParameter("RunningMaxSpeed", RunningMaxSpeed, true, this, "OnParameterValueChanged");
+	SM->RegisterFloatParameter("RunningSpeedBuildUp", RunningSpeedBuildUp, true, this, "OnParameterValueChanged");
+	SM->RegisterFloatParameter("RunningSpeedBuildUpWindow", RunningSpeedBuildUpWindow, true, this, "OnParameterValueChanged");
+	SM->RegisterFloatParameter("RunningSpeedDrop", RunningSpeedDrop, true, this, "OnParameterValueChanged");
 	SM->RegisterFloatParameter("MovementInputIterpolationSpeed_Running", MovementInputIterpolationSpeed, true, this, "OnParameterValueChanged");
 
 	SM->RegisterBoolParameter("OrientRotationToMovement_Running", OrientRotationToMovement, true, this, "OnParameterValueChanged");
@@ -89,6 +93,18 @@ void USCM_Running::OnParameterValueChanged(const FName& ParameterName)
 {
 	if (ParameterName == "RunningSpeed")
 		RunningSpeed = GetScarletMovement()->GetFloatParameterValue("RunningSpeed");
+
+	else if (ParameterName == "RunningMaxSpeed")
+		RunningMaxSpeed = GetScarletMovement()->GetFloatParameterValue("RunningMaxSpeed");
+
+	else if (ParameterName == "RunningSpeedBuildUp")
+		RunningSpeedBuildUp = GetScarletMovement()->GetFloatParameterValue("RunningSpeedBuildUp");
+
+	else if (ParameterName == "RunningSpeedBuildUpWindow")
+		RunningSpeedBuildUpWindow = GetScarletMovement()->GetFloatParameterValue("RunningSpeedBuildUpWindow");
+
+	else if (ParameterName == "RunningSpeedDrop")
+		RunningSpeedDrop = GetScarletMovement()->GetFloatParameterValue("RunningSpeedDrop");
 
 	else if (ParameterName == "MovementInputIterpolationSpeed_Running")
 		MovementInputIterpolationSpeed = GetScarletMovement()->GetFloatParameterValue("MovementInputIterpolationSpeed_Running");
@@ -122,8 +138,27 @@ void USCM_Running::ExitState_Implementation()
 
 void USCM_Running::UpdateState_Implementation(float DeltaTime)
 {
+	// Input
 	FVector MovementVector = GetScarletMovement()->GetMovementInputVector();
 	GetCharacterMovement()->AddInputVector(MovementVector);
+
+	// Speed control
+	UCharacterMovementComponent* CM = GetCharacterMovement();
+	ACharacter* Character = CM->GetCharacterOwner();
+
+	if (Character->GetVelocity().Size() >= CM->MaxWalkSpeed * RunningSpeedBuildUpWindow)
+	{
+		if (Character->GetVelocity().Size() < RunningMaxSpeed)
+			CM->MaxWalkSpeed = CM->MaxWalkSpeed + RunningSpeedBuildUp * DeltaTime;
+		else
+			CM->MaxWalkSpeed = RunningMaxSpeed;
+	}
+
+	else if (Character->GetVelocity().Size() > RunningSpeed)
+		CM->MaxWalkSpeed = CM->MaxWalkSpeed - RunningSpeedDrop * DeltaTime;
+
+	else
+		CM->MaxWalkSpeed = RunningSpeed;
 
 	// Orient Rotation To Movement
 	bool IsAiming = GetScarletMovement()->GetBoolInputValue("Aim");
