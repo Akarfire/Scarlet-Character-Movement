@@ -254,6 +254,7 @@ void USCM_Sliding::SetupParameters_Implementation()
 	SM->RegisterFloatParameter("SlideCooldown", SlideCooldown, true, this, "OnParameterValueChanged");
 	SM->RegisterFloatParameter("SlideJumpCooldown", SlideJumpCooldown, true, this, "OnParameterValueChanged");
 	SM->RegisterFloatParameter("GroundTraceMultiplier_Sliding", GroundTraceMultiplier, true, this, "OnParameterValueChanged");
+	SM->RegisterFloatParameter("SlideVelocityConservation", SlideVelocityConservation, true, this, "OnParameterValueChanged");
 
 	SM->RegisterBoolParameter("OrientRotationToMovement_Sliding", OrientRotationToMovement, true, this, "OnParameterValueChanged");
 	SM->RegisterBoolParameter("OrientRotationToMovementWhenAiming_Sliding", OrientRotationToMovementWhenAiming, true, this, "OnParameterValueChanged");
@@ -294,6 +295,9 @@ void USCM_Sliding::OnParameterValueChanged(const FName& ParameterName)
 
 	else if (ParameterName == "GroundFriction_Sliding")
 		GroundFriction = GetScarletMovement()->GetFloatParameterValue("GroundFriction_Sliding");
+
+	else if (ParameterName == "SlideVelocityConservation")
+		SlideVelocityConservation = GetScarletMovement()->GetFloatParameterValue("SlideVelocityConservation");
 
 	else if (ParameterName == "SlideCooldown")
 	{
@@ -339,6 +343,8 @@ void USCM_Sliding::EnterState_Implementation()
 {
 	// Movement parameters
 	UCharacterMovementComponent* CM = GetCharacterMovement();
+	ACharacter* Character = CM->GetCharacterOwner();
+
 	CM->SetMovementMode(EMovementMode::MOVE_Walking);
 
 	auto* Capsule = GetCharacterMovement()->GetCharacterOwner()->GetCapsuleComponent();
@@ -358,6 +364,9 @@ void USCM_Sliding::EnterState_Implementation()
 	{
 		Normal = Hit.Normal;
 	
+		// Velocity
+		CM->Velocity = CM->Velocity * SlideVelocityConservation;
+
 		// Slide boost
 		FVector Boost = SlideBoost * (-1.f) * FVector::CrossProduct(Normal, GetScarletMovement()->GetOwner()->GetActorRightVector());
 		GetCharacterMovement()->GetCharacterOwner()->LaunchCharacter(Boost, false, false);

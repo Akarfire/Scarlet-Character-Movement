@@ -162,6 +162,7 @@ class SCARLETCHARACTERMOVEMENT_API USCM_Sliding : public USCM_MovementStateBase
 	float SlideCooldown = 0.5f;
 	float SlideJumpCooldown = 0.35f;
 	float GroundTraceMultiplier = 5.f;
+	float SlideVelocityConservation = 0.75f;
 	bool OrientRotationToMovement = true;
 	bool OrientRotationToMovementWhenAiming = false;
 
