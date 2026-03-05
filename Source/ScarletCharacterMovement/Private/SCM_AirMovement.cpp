@@ -79,11 +79,15 @@ void USCM_Jumping::SetupParameters_Implementation()
 
 	SM->RegisterFloatParameter("JumpZVelocity", JumpZVelocity, true, this, "OnParameterValueChanged");
 	SM->RegisterFloatParameter("AirControl_Jumping", AirControl, true, this, "OnParameterValueChanged");
+	SM->RegisterFloatParameter("GroundTraceMultiplier_Jumping", GroundTraceMultiplier, true, this, "OnParameterValueChanged");
 	SM->RegisterFloatParameter("HorizontalVelocityBoostFraction_Jumping", HorizontalVelocityBoostFraction, true, this, "OnParameterValueChanged");
 	SM->RegisterFloatParameter("MovementInputIterpolationSpeed_Jumping", MovementInputIterpolationSpeed, true, this, "OnParameterValueChanged");
 
 	SM->RegisterBoolParameter("OrientRotationToMovement_Jumping", OrientRotationToMovement, true, this, "OnParameterValueChanged");
 	SM->RegisterBoolParameter("OrientRotationToMovementWhenAiming_Jumping", OrientRotationToMovementWhenAiming, true, this, "OnParameterValueChanged");
+
+	// Control parameter
+	GetScarletMovement()->RegisterFloatParameter("MaxJumpBoostTime", MaxJumpBoostTime, true, this, "OnParameterValueChanged");
 }
 
 // Called when any parameter value is changed
@@ -94,6 +98,20 @@ void USCM_Jumping::OnParameterValueChanged(const FName& ParameterName)
 
 	else if (ParameterName == "AirControl_Jumping")
 		AirControl = GetScarletMovement()->GetFloatParameterValue("AirControl_Jumping");
+
+	else if (ParameterName == "GroundTraceMultiplier_Jumping")
+	{
+		float OldGroundTraceMultiplier = GroundTraceMultiplier;
+		GroundTraceMultiplier = GetScarletMovement()->GetFloatParameterValue("GroundTraceMultiplier_Jumping");
+		if (GetStateMachine()->GetActiveState() == GetStateID())
+		{
+			GetScarletMovement()->SetFloatParameterValue("GroundTraceDistance", GetScarletMovement()->GetFloatParameterValue("GroundTraceDistance") / OldGroundTraceMultiplier);
+			if (GroundTraceMultiplier == 0.f)
+				CachedGroundTraceDistance = GetScarletMovement()->GetFloatParameterValue("GroundTraceDistance");
+			
+			GetScarletMovement()->SetFloatParameterValue("GroundTraceDistance", GetScarletMovement()->GetFloatParameterValue("GroundTraceDistance") * GroundTraceMultiplier);
+		}
+	}
 
 	else if (ParameterName == "HorizontalVelocityBoostFraction_Jumping")
 		HorizontalVelocityBoostFraction = GetScarletMovement()->GetFloatParameterValue("HorizontalVelocityBoostFraction_Jumping");
@@ -106,6 +124,10 @@ void USCM_Jumping::OnParameterValueChanged(const FName& ParameterName)
 
 	else if (ParameterName == "OrientRotationToMovementWhenAiming_Jumping")
 		OrientRotationToMovementWhenAiming = GetScarletMovement()->GetBoolParameterValue("OrientRotationToMovementWhenAiming_Jumping");
+
+	// Control parameter
+	else if (ParameterName == "MaxJumpBoostTime")
+		MaxJumpBoostTime = GetScarletMovement()->GetFloatParameterValue("MaxJumpBoostTime");
 
 	// If the state is active
 	if (GetScarletMovement()->GetActiveMovementState() == this)
@@ -124,12 +146,24 @@ void USCM_Jumping::EnterState_Implementation()
 
 	GetScarletMovement()->MovementInputInterpolationSpeed = MovementInputIterpolationSpeed;
 
-	FVector HorizontalVelocity = GetCharacterMovement()->GetCharacterOwner()->GetVelocity() * (FVector::OneVector - GetCharacterMovement()->GetCharacterOwner()->GetActorUpVector());
-	GetCharacterMovement()->GetCharacterOwner()->LaunchCharacter(HorizontalVelocity * HorizontalVelocityBoostFraction, false, false);
+	// Ground trace distance
+	if (GroundTraceMultiplier == 0.f)
+		CachedGroundTraceDistance = GetScarletMovement()->GetFloatParameterValue("GroundTraceDistance");
+	GetScarletMovement()->SetFloatParameterValue("GroundTraceDistance", GetScarletMovement()->GetFloatParameterValue("GroundTraceDistance") * GroundTraceMultiplier);
+
+	// Initial jump
+	FVector VerticalVelocity = GetCharacterMovement()->GetCharacterOwner()->GetActorUpVector() * JumpZVelocity;
+	GetCharacterMovement()->GetCharacterOwner()->LaunchCharacter(VerticalVelocity, false, false);
+
 }
 
 void USCM_Jumping::ExitState_Implementation()
 {
+	// Ground trace distance
+	if (GroundTraceMultiplier == 0.f)
+		GetScarletMovement()->SetFloatParameterValue("GroundTraceDistance", CachedGroundTraceDistance);
+	else
+		GetScarletMovement()->SetFloatParameterValue("GroundTraceDistance", GetScarletMovement()->GetFloatParameterValue("GroundTraceDistance") / GroundTraceMultiplier);
 }
 
 void USCM_Jumping::UpdateState_Implementation(float DeltaTime)
@@ -143,8 +177,16 @@ void USCM_Jumping::UpdateState_Implementation(float DeltaTime)
 	GetCharacterMovement()->bOrientRotationToMovement = IsAiming ? OrientRotationToMovementWhenAiming : OrientRotationToMovement;
 	GetScarletMovement()->GetCharacterMovementComponent()->GetCharacterOwner()->bUseControllerRotationYaw = !GetCharacterMovement()->bOrientRotationToMovement;
 
+	// Horizontal boost
+	FVector HorizontalVelocity = GetCharacterMovement()->GetCharacterOwner()->GetVelocity() * (FVector::OneVector - GetCharacterMovement()->GetCharacterOwner()->GetActorUpVector());
+	FVector VerticalVelocity = GetCharacterMovement()->GetCharacterOwner()->GetActorUpVector() * JumpZVelocity;
+
+	float VelocityMultiplier = 1 / MaxJumpBoostTime * DeltaTime;
+	
+	GetCharacterMovement()->GetCharacterOwner()->LaunchCharacter((HorizontalVelocity  * HorizontalVelocityBoostFraction + VerticalVelocity) * VelocityMultiplier, false, false);
+
 	// Actual jump
-	GetCharacterMovement()->GetCharacterOwner()->Jump();
+	//GetCharacterMovement()->GetCharacterOwner()->Jump();
 }
 
 
@@ -154,6 +196,8 @@ void USCM_Jumping::UpdateState_Implementation(float DeltaTime)
 // Casts a trace to find the ground, returns true if ground was found
 bool USCM_AirMovement::GroundTrace()
 {
+	if (GroundTraceDistance == 0.f) return false;
+
 	auto* Capsule = GetCharacterMovement()->GetCharacterOwner()->GetCapsuleComponent();
 
 	FVector Start = GetScarletMovement()->GetOwner()->GetActorLocation();

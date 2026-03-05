@@ -67,14 +67,21 @@ class SCARLETCHARACTERMOVEMENT_API USCM_Jumping : public USCM_MovementStateBase
 {
 	GENERATED_BODY()
 
+	// Cache
+	float CachedGroundTraceDistance = 0.0f;
+
 	// Parameters
 
 	float JumpZVelocity = 750.f;
 	float AirControl = 0.4f;
+	float GroundTraceMultiplier = 0.f;
 	float HorizontalVelocityBoostFraction = 0.5f;
 	float MovementInputIterpolationSpeed = 1.f;
 	bool OrientRotationToMovement = true;
 	bool OrientRotationToMovementWhenAiming = false;
+
+	// Control parameter
+	float MaxJumpBoostTime = 0.25f;
 
 public:
 
