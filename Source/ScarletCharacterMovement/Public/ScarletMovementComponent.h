@@ -360,11 +360,11 @@ public:
 		RegisterParameter<bool>(BoolParameterStorage, ParameterName, DefaultValue, AutoSubscribe, Subscriber, NotificationFunctionName);
 	}
 
-	// Sets a bool-type input value
+	// Sets a bool-type parameter value
 	UFUNCTION(BlueprintCallable, Category = "ScarletMovement|Parameters")
 	void SetBoolParameterValue(const FName& InParameterName, bool InValue) { SetParameterValue<bool>(BoolParameterStorage, InParameterName, InValue); }
 
-	// Returns a bool-type input value (returns default value if no such input is found)
+	// Returns a bool-type parameter value (returns default value if no such parameter is found)
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Parameters")
 	bool GetBoolParameterValue(const FName& InParameterName) { return GetParameterValue<bool>(BoolParameterStorage, InParameterName); }
 
@@ -381,11 +381,11 @@ public:
 		RegisterParameter<int32>(IntParameterStorage, ParameterName, DefaultValue, AutoSubscribe, Subscriber, NotificationFunctionName);
 	}
 
-	// Sets a Int-type input value
+	// Sets a Int-type parameter value
 	UFUNCTION(BlueprintCallable, Category = "ScarletMovement|Parameters")
 	void SetIntParameterValue(const FName& InParameterName, int32 InValue) { SetParameterValue<int32>(IntParameterStorage, InParameterName, InValue); }
 
-	// Returns a Int-type input value (returns default value if no such input is found)
+	// Returns a Int-type parameter value (returns default value if no such parameter is found)
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Parameters")
 	int32 GetIntParameterValue(const FName& InParameterName) { return GetParameterValue<int32>(IntParameterStorage, InParameterName); }
 
@@ -402,11 +402,11 @@ public:
 		RegisterParameter<float>(FloatParameterStorage, ParameterName, DefaultValue, AutoSubscribe, Subscriber, NotificationFunctionName);
 	}
 
-	// Sets a Float-type input value
+	// Sets a Float-type parameter value
 	UFUNCTION(BlueprintCallable, Category = "ScarletMovement|Parameters")
 	void SetFloatParameterValue(const FName& InParameterName, float InValue) { SetParameterValue<float>(FloatParameterStorage, InParameterName, InValue); }
 
-	// Returns a Float-type input value (returns default value if no such input is found)
+	// Returns a Float-type parameter value (returns default value if no such parameter is found)
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|Parameters")
 	float GetFloatParameterValue(const FName& InParameterName) { return GetParameterValue<float>(FloatParameterStorage, InParameterName); }
 
