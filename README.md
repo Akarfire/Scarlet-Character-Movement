@@ -18,9 +18,11 @@ A modular state-machine based character movement system. State machines are used
 * [Layered State Machine Architecture](Documentation/Layered%20State%20Machine%20Architecture.md)
 * [Input](Documentation/Input.md)
 * [Parameters](Documentation/Parameters.md)
+* [Dynamic Gates](Documentation/Dynamic%20Gates.md)
 
 **Default Movement:**
 * [Zaris-Style Movement](Documentation/Default/Zaris-Style%20Movement.md)
 
 ### Dependencies
 * Scarlet State Machines plugin: [https://github.com/Akarfire/Scarlet-StateMachines](https://github.com/Akarfire/Scarlet-StateMachines)
+* Scarlet Timers&Timelines: [https://github.com/Akarfire/Scarlet_TimersAndTimelines](https://github.com/Akarfire/Scarlet_TimersAndTimelines)
