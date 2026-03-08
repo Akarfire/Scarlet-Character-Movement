@@ -127,7 +127,7 @@ public:
 	//    - Normalizes input vector, thus fixing diagonal ovelapping
 	//    - Keeps analog input range
 	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Default|Input")
-	bool EnableStandartMovementInputProcessing = true;
+	bool EnableStandardMovementInputProcessing = true;
 
 	// Sets Movement Vector
 	UFUNCTION(BlueprintCallable, Category = "ScarletMovement|Input")

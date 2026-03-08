@@ -141,7 +141,7 @@ void UScarletMovementComponent::RegenerateMovementStateMachineStack(TArray<TSubc
 void UScarletMovementComponent::SetMovementInputVector(FVector InMovementInput)
 {
 	FVector MovementInput = InMovementInput;
-	if (EnableStandartMovementInputProcessing)
+	if (EnableStandardMovementInputProcessing)
 		MovementInput = UScarletMovementFunctionLibrary::ProcessMovementInputVector(InMovementInput);
 
 	if (OrientMovementInputToYawCameraRotation)
