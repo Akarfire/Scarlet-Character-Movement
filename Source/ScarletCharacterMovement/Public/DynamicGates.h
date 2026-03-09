@@ -120,7 +120,7 @@ public:
 		GateP->SetNamedGateValue(ValueName, Value);
 	}
 
-	// Removes a named value frome the dynamic gate
+	// Removes a named value from the dynamic gate
 	UFUNCTION(BlueprintCallable, Category = "CLASS|DynamicGates")
 	void RemoveDynamicGateNamedValue(const FName& GateName, const FName& ValueName)
 	{
@@ -129,7 +129,7 @@ public:
 		GateP->RemoveNamedGateValue(ValueName);
 	}
 
-	// Returns the named value from the dynamic gate, "false" if value not found
+	// Returns the named value from the dynamic gate
 	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "CLASS|DynamicGates")
 	bool GetDynamicGateNamedValue(const FName& GateName, const FName& ValueName)
 	{
