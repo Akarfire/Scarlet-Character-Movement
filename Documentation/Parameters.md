@@ -61,6 +61,8 @@ void SubscribeToParameter(  FName ParameterName,
 **2. Subscription during parameter registration**
 `RegisterTypeParameter` method provides a similar interface to auto subscribe to the registered parameter.
 
+*NOTE: When a new `UOBJECT` subscribes to a parameter, a on-value-changed notification is immediately sent to all subscribers of this parameter.*
+
 ---
 #### Notification Function Prototype
 
@@ -113,8 +115,26 @@ void RegisterParameter( TMap<FName, T>& ParameterStorage,
 
 These templated methods are then wrapped by `UFUNCTION` methods to provide a general blueprint-friendly interface.
 
-Subscriptions are stored as `Delegates`:
+Subscriptions are stored as `Delegates`
 ```cpp
 // Fires off when custom MPAS_Handler parameter value is changed
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnMovementParameterValueChanged, FName, InParameterName);
 ```
+inside of a shared storage (shared between parameters of all types)
+```cpp
+TMap<FName, FOnMovementParameterValueChanged> ParameterSubscriptions;
+```
+
+`SendParameterNotifications` method is used to send update notifications to all subscribers of the specified parameter. If the specified parameter does not exist - nothing happens.
+```cpp
+void SendParameterNotifications(const FName& InParamterName);
+```
+
+---
+### Debugging
+
+To make debugging of parameter values easier the following method is provided:
+```cpp
+void GetAllParameterNames(TArray<FName>& BoolParameters, TArray<FName>& IntParameters, TArray<FName>& FloatParameters);
+```
+It returns arrays of names of every parameter of the specified type.
