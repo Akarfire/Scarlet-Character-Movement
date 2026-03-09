@@ -37,12 +37,12 @@ protected:
 	// Timer controller that handles custom timers and timelines
 	USTT_TimerController* TimerController = nullptr;
 
+	// Pointer to the active state, should only be modified by movement state machines
+	USCM_MovementStateBase* ActiveState;
+
 public:	
 	// Sets default values for this component's properties
 	UScarletMovementComponent();
-
-	// Pointer to the active state, should only be modified by movement state machines
-	USCM_MovementStateBase* ActiveState;
 
 	// DO NOT CALL MANUALLY!
 	void SetActiveState(USCM_MovementStateBase* NewActiveState);
