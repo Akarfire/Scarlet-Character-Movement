@@ -6,7 +6,44 @@ A modular state-machine based character movement system. State machines are used
 
 ---
 ### Features
-*TO DO: Add gifs of movement features*
+
+*NOTE: Animations and character model are not included with the plugin!*
+#### Basic ground movement
+
+![](Documentation/Images/GIFs/BasicMovement.gif)
+
+#### Movement Input Interpolation
+
+![](Documentation/Images/GIFs/InputInterpolation.gif)
+
+#### Running
+
+![](Documentation/Images/GIFs/Running.gif)
+
+#### Jumping
+
+![](Documentation/Images/GIFs/Jumping.gif)
+
+#### Sliding
+
+![](Documentation/Images/GIFs/Sliding.gif)
+
+#### Rolling
+
+![](Documentation/Images/GIFs/Rolling.gif)
+
+#### Chaining Movement Features
+
+![](Documentation/Images/GIFs/Combinations.gif)
+
+#### Vaulting
+
+![](Documentation/Images/GIFs/Vaulting.gif)
+
+#### Planned Features
+
+* Swimming & Diving;
+* Multiplayer support (currently only single-player).
 
 ---
 ### Documentation
