@@ -2,7 +2,7 @@
 
 A modular state-machine based character movement system. State machines are used  to control parameters of the default Unreal Engine's Character Movement Component.
 
-**Status: In Development**
+**Status: Early Access / In Development**
 
 ---
 ### Features
