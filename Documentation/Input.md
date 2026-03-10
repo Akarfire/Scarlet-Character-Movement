@@ -173,6 +173,7 @@ const T& GetInputValue(TMap<FName, T>& InputStorage, const FName& InputName)
 	if (ValueP)
 		return *ValueP;
 
+	InputStorage.Add(InputName, InputStorage["Default"]);
 	return InputStorage["Default"];
 }
 ```
