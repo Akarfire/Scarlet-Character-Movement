@@ -214,6 +214,7 @@ protected:
 		if (ValueP)
 			return *ValueP;
 
+		InputStorage.Add(InputName, InputStorage["Default"]);
 		return InputStorage["Default"];
 	}
 
