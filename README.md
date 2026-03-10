@@ -11,7 +11,9 @@ A modular state-machine based character movement system. State machines are used
 ---
 ### Documentation
 
-[User Guide](Documentation/User%20Guide.md)
+**User Guide:**
+* [Usage](Usage.md)
+* [Expansion](Expansion.md)
 
 **General:**
 * [Design Philosophy](Documentation/Design%20Philosophy.md)
