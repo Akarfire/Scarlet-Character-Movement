@@ -21,7 +21,7 @@
 
 Generally, to change parameters you can address them directly by name:
 
-![](Images/ScarletMovementParameterBlueprintExample.png)
+![](../Images/ScarletMovementParameterBlueprintExample.png)
 
 To get parameter's current value you can use `Get<Type>ParameterValue` function. Such functions are unique for each parameter type (`bool`, `int32`, `float`):
 
@@ -52,7 +52,7 @@ For more technical details see: [Parameters](../Parameters.md)
 To pass Movement Input Vector and current Camera Rotation to the Scarlet Movement you should use `SetMovementInputVector` and `SetCurrentCameraRotation` functions. Camera rotation input is used to calculate movement direction based on the input vector.
 
 *Default input setup example:*
-![](Images/ScarletMovementDefaultInputBlueprintExample.png)
+![](../Images/ScarletMovementDefaultInputBlueprintExample.png)
 
 You can configure input processing parameters in `ScarletMovement` component's parameters:
 
@@ -70,7 +70,7 @@ Any input other than Movement Input Vector is handled using custom input. Custom
 
 To modify custom input values you can directly access them by name:
 
-![692](Images/ScarletMovementCustomInputBlueprintExample.png)
+![](../Images/ScarletMovementCustomInputBlueprintExample.png)
 
 Such functions are unique for each parameter type:
 - `bool` : `SetBoolInputValue`, `GetBoolInputValue`;
