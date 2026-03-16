@@ -20,5 +20,15 @@
 			"Type": "Runtime",
 			"LoadingPhase": "Default"
 		}
+	],
+	"Plugins": [
+		{
+			"Name": "ScarletStateMachines",
+			"Enabled": true
+		},
+		{
+			"Name": "Scarlet_TimersAndTimelines",
+			"Enabled": true
+		}
 	]
 }
