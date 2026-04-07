@@ -56,7 +56,7 @@ A modular state-machine based character movement system. State machines are used
 ---
 ### User Guide
 
-For usage instructions refer to the following files:**
+For usage instructions refer to the following files:
 * [Usage](Documentation/Guides/Usage.md)
 * [Expansion](Documentation/Guides/Expansion.md)
 
