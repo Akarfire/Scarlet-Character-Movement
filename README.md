@@ -46,13 +46,24 @@ A modular state-machine based character movement system. State machines are used
 * Multiplayer support (currently only single-player).
 
 ---
+### Installation
+
+1. Download the latest release;
+2. Download and Install **Dependencies**:
+	* Scarlet State Machines plugin: [https://github.com/Akarfire/Scarlet-StateMachines](https://github.com/Akarfire/Scarlet-StateMachines)
+	* Scarlet Timers & Timelines: [https://github.com/Akarfire/Scarlet_TimersAndTimelines](https://github.com/Akarfire/Scarlet_TimersAndTimelines)
+3. Extract the archive and move plugin folder to the `./Plugins` directory in your project (if your project has no `./Plugin` directory, then create it).
+---
+### User Guide
+
+For usage instructions refer to the following files:**
+* [Usage](Documentation/Guides/Usage.md)
+* [Expansion](Documentation/Guides/Expansion.md)
+
+---
 ### Documentation
 
 *Some parts of the documentation are still "Work In Progress".*
-
-**User Guide:**
-* [Usage](Documentation/Guides/Usage.md)
-* [Expansion](Documentation/Guides/Expansion.md)
 
 **General:**
 * [Design Philosophy](Documentation/Design%20Philosophy.md)
@@ -70,6 +81,3 @@ A modular state-machine based character movement system. State machines are used
 **Default Movement:**
 * [Zaris-Style Movement](Documentation/Default/Zaris-Style%20Movement.md)
 
-### Dependencies
-* Scarlet State Machines plugin: [https://github.com/Akarfire/Scarlet-StateMachines](https://github.com/Akarfire/Scarlet-StateMachines)
-* Scarlet Timers & Timelines: [https://github.com/Akarfire/Scarlet_TimersAndTimelines](https://github.com/Akarfire/Scarlet_TimersAndTimelines)
