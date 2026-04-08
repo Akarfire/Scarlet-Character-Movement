@@ -47,7 +47,6 @@ void USCM_Falling::OnParameterValueChanged(const FName& ParameterName)
 void USCM_Falling::EnterState_Implementation()
 {
 	UCharacterMovementComponent* CM = GetCharacterMovement();
-	CM->SetMovementMode(EMovementMode::MOVE_Walking);
 	CM->AirControl = AirControl;
 
 	GetScarletMovement()->MovementInputInterpolationSpeed = MovementInputIterpolationSpeed;
@@ -79,6 +78,9 @@ void USCM_Jumping::SetupParameters_Implementation()
 
 	SM->RegisterFloatParameter("JumpZVelocity", JumpZVelocity, true, this, "OnParameterValueChanged");
 	SM->RegisterFloatParameter("AirControl_Jumping", AirControl, true, this, "OnParameterValueChanged");
+	SM->RegisterFloatParameter("MaxJumpBoostTime", MaxJumpBoostTime, true, this, "OnParameterValueChanged");
+	SM->RegisterFloatParameter("JumpCoolDown", JumpCoolDown, true, this, "OnParameterValueChanged");
+	SM->RegisterFloatParameter("ProgressiveJumpMultiplier", ProgressiveJumpMultiplier, true, this, "OnParameterValueChanged");
 	SM->RegisterFloatParameter("GroundTraceMultiplier_Jumping", GroundTraceMultiplier, true, this, "OnParameterValueChanged");
 	SM->RegisterFloatParameter("HorizontalVelocityBoostFraction_Jumping", HorizontalVelocityBoostFraction, true, this, "OnParameterValueChanged");
 	SM->RegisterFloatParameter("MovementInputIterpolationSpeed_Jumping", MovementInputIterpolationSpeed, true, this, "OnParameterValueChanged");
@@ -86,8 +88,13 @@ void USCM_Jumping::SetupParameters_Implementation()
 	SM->RegisterBoolParameter("OrientRotationToMovement_Jumping", OrientRotationToMovement, true, this, "OnParameterValueChanged");
 	SM->RegisterBoolParameter("OrientRotationToMovementWhenAiming_Jumping", OrientRotationToMovementWhenAiming, true, this, "OnParameterValueChanged");
 
-	// Control parameter
-	GetScarletMovement()->RegisterFloatParameter("MaxJumpBoostTime", MaxJumpBoostTime, true, this, "OnParameterValueChanged");
+	// Dynamic gates
+	GetScarletMovement()->RegisterDynamicGate("CanJump", ESCM_DynamicGateRule::And, true);
+	GetScarletMovement()->RegisterDynamicGate("StopJump", ESCM_DynamicGateRule::Or, false);
+
+	// Timers
+	GetScarletMovement()->GetTimerController()->CreateTimer("JumpCooldown", JumpCoolDown, false, false);
+	GetScarletMovement()->GetTimerController()->SubscribeToTimer("JumpCooldown", this, "OnJumpCooldownIsOver");
 }
 
 // Called when any parameter value is changed
@@ -98,6 +105,18 @@ void USCM_Jumping::OnParameterValueChanged(const FName& ParameterName)
 
 	else if (ParameterName == "AirControl_Jumping")
 		AirControl = GetScarletMovement()->GetFloatParameterValue("AirControl_Jumping");
+
+	else if (ParameterName == "MaxJumpBoostTime")
+		MaxJumpBoostTime = GetScarletMovement()->GetFloatParameterValue("MaxJumpBoostTime");
+
+	else if (ParameterName == "JumpCoolDown")
+	{
+		JumpCoolDown = GetScarletMovement()->GetFloatParameterValue("JumpCoolDown");
+		GetScarletMovement()->GetTimerController()->ChangeTimerLength("JumpCoolDown", JumpCoolDown);
+	}
+
+	else if (ParameterName == "ProgressiveJumpMultiplier")
+		ProgressiveJumpMultiplier = GetScarletMovement()->GetFloatParameterValue("ProgressiveJumpMultiplier");
 
 	else if (ParameterName == "GroundTraceMultiplier_Jumping")
 	{
@@ -125,10 +144,6 @@ void USCM_Jumping::OnParameterValueChanged(const FName& ParameterName)
 	else if (ParameterName == "OrientRotationToMovementWhenAiming_Jumping")
 		OrientRotationToMovementWhenAiming = GetScarletMovement()->GetBoolParameterValue("OrientRotationToMovementWhenAiming_Jumping");
 
-	// Control parameter
-	else if (ParameterName == "MaxJumpBoostTime")
-		MaxJumpBoostTime = GetScarletMovement()->GetFloatParameterValue("MaxJumpBoostTime");
-
 	// If the state is active
 	if (GetScarletMovement()->GetActiveMovementState() == this)
 	{
@@ -137,14 +152,20 @@ void USCM_Jumping::OnParameterValueChanged(const FName& ParameterName)
 	}
 }
 
+void USCM_Jumping::OnJumpCooldownIsOver(FName InTimerName) 
+{ 
+	GetScarletMovement()->SetDynamicGateNamedValue("CanJump", "Cooldown", true); 
+}
+
 void USCM_Jumping::EnterState_Implementation()
 {
 	UCharacterMovementComponent* CM = GetCharacterMovement();
-	CM->SetMovementMode(EMovementMode::MOVE_Walking);
 	CM->AirControl = AirControl;
-	CM->JumpZVelocity = JumpZVelocity;
 
 	GetScarletMovement()->MovementInputInterpolationSpeed = MovementInputIterpolationSpeed;
+
+	GetScarletMovement()->SetDynamicGateNamedValue("StopJump", "JumpDuration", false);
+	JumpTime = 0.f;
 
 	// Ground trace distance
 	if (GroundTraceMultiplier == 0.f)
@@ -164,6 +185,11 @@ void USCM_Jumping::ExitState_Implementation()
 		GetScarletMovement()->SetFloatParameterValue("GroundTraceDistance", CachedGroundTraceDistance);
 	else
 		GetScarletMovement()->SetFloatParameterValue("GroundTraceDistance", GetScarletMovement()->GetFloatParameterValue("GroundTraceDistance") / GroundTraceMultiplier);
+
+	GetScarletMovement()->SetDynamicGateNamedValue("CanJump", "Cooldown", false);
+
+	GetScarletMovement()->GetTimerController()->ResetTimer("JumpCooldown");
+	GetScarletMovement()->GetTimerController()->StartTimer("JumpCooldown");
 }
 
 void USCM_Jumping::UpdateState_Implementation(float DeltaTime)
@@ -177,16 +203,17 @@ void USCM_Jumping::UpdateState_Implementation(float DeltaTime)
 	GetCharacterMovement()->bOrientRotationToMovement = IsAiming ? OrientRotationToMovementWhenAiming : OrientRotationToMovement;
 	GetScarletMovement()->GetCharacterMovementComponent()->GetCharacterOwner()->bUseControllerRotationYaw = !GetCharacterMovement()->bOrientRotationToMovement;
 
-	// Horizontal boost
+	// Progressive boost
 	FVector HorizontalVelocity = GetCharacterMovement()->GetCharacterOwner()->GetVelocity() * (FVector::OneVector - GetCharacterMovement()->GetCharacterOwner()->GetActorUpVector());
 	FVector VerticalVelocity = GetCharacterMovement()->GetCharacterOwner()->GetActorUpVector() * JumpZVelocity;
 
-	float VelocityMultiplier = 1 / MaxJumpBoostTime * DeltaTime;
+	float VelocityMultiplier = 1 / MaxJumpBoostTime * ProgressiveJumpMultiplier * DeltaTime;
 	
-	GetCharacterMovement()->GetCharacterOwner()->LaunchCharacter((HorizontalVelocity  * HorizontalVelocityBoostFraction + VerticalVelocity) * VelocityMultiplier, false, false);
+	GetCharacterMovement()->GetCharacterOwner()->LaunchCharacter((HorizontalVelocity * HorizontalVelocityBoostFraction + VerticalVelocity) * VelocityMultiplier, false, false);
 
-	// Actual jump
-	//GetCharacterMovement()->GetCharacterOwner()->Jump();
+	JumpTime += DeltaTime;
+	if (JumpTime > MaxJumpBoostTime)
+		GetScarletMovement()->SetDynamicGateNamedValue("StopJump", "JumpDuration", true);
 }
 
 

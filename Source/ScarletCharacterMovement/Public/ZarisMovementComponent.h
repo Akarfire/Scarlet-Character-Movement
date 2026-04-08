@@ -734,6 +734,20 @@ public:
 
 
     UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|AirMovement|Jumping")
+    float ProgressiveJumpMultiplier = 0.5f;
+
+    UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|AirMovement|Jumping")
+    float GetProgressiveJumpMultiplier() { return ProgressiveJumpMultiplier; }
+
+    UFUNCTION(BlueprintCallable, Category = "ScarletMovement|AirMovement|Jumping")
+    void SetProgressiveJumpMultiplier(float NewProgressiveJumpMultiplier)
+    {
+        ProgressiveJumpMultiplier = NewProgressiveJumpMultiplier;
+        SetFloatParameterValue("ProgressiveJumpMultiplier", ProgressiveJumpMultiplier);
+    }
+
+
+    UPROPERTY(BlueprintReadWrite, EditDefaultsOnly, Category = "Default|AirMovement|Jumping")
     float MovementInputIterpolationSpeed_Jumping = 1.f;
 
     UFUNCTION(BlueprintCallable, BlueprintPure, Category = "ScarletMovement|AirMovement|Jumping")
@@ -951,6 +965,7 @@ protected:
         SetAirControl_Jumping(AirControl_Jumping);
         SetGroundTraceMultiplier_Jumping(GroundTraceMultiplier_Jumping);
         SetHorizontalVelocityBoostFraction_Jumping(HorizontalVelocityBoostFraction_Jumping);
+        SetProgressiveJumpMultiplier(ProgressiveJumpMultiplier);
         SetMovementInputIterpolationSpeed_Jumping(MovementInputIterpolationSpeed_Jumping);
         SetMaxJumpBoostTime(MaxJumpBoostTime);
         SetJumpCoolDown(JumpCoolDown);

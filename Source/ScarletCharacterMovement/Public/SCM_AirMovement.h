@@ -67,21 +67,24 @@ class SCARLETCHARACTERMOVEMENT_API USCM_Jumping : public USCM_MovementStateBase
 {
 	GENERATED_BODY()
 
-	// Cache
-	float CachedGroundTraceDistance = 0.0f;
-
 	// Parameters
 
 	float JumpZVelocity = 750.f;
 	float AirControl = 0.4f;
+	float MaxJumpBoostTime = 0.25f;
+	float JumpCoolDown = 0.2f;
+	float ProgressiveJumpMultiplier = 1.f;
 	float GroundTraceMultiplier = 0.f;
 	float HorizontalVelocityBoostFraction = 0.5f;
 	float MovementInputIterpolationSpeed = 1.f;
 	bool OrientRotationToMovement = true;
 	bool OrientRotationToMovementWhenAiming = false;
 
-	// Control parameter
-	float MaxJumpBoostTime = 0.25f;
+protected:
+	// Cache
+	float CachedGroundTraceDistance = 0.0f;
+
+	float JumpTime = 0.f;
 
 public:
 
@@ -91,6 +94,9 @@ public:
 	// Called when any parameter value is changed
 	UFUNCTION()
 	void OnParameterValueChanged(const FName& ParameterName);
+
+	UFUNCTION()
+	void OnJumpCooldownIsOver(FName InTimerName);
 
 	// Registering parameters
 	virtual void SetupParameters_Implementation() override;
@@ -120,12 +126,8 @@ protected:
 	// Casts a trace to find the ground, returns true if ground was found
 	bool GroundTrace();
 
-	float JumpTime = 0.f;
-
 	// Parameters
 	float GroundTraceDistance = 10.f;
-	float MaxJumpBoostTime = 0.25f;
-	float JumpCoolDown = 0.2f;
 
 public:
 
@@ -152,25 +154,11 @@ public:
 	{ 
 		Super::OnUpdateStateMachine_Implementation(DeltaTime);
 
-		IsGrounded = GroundTrace();
-
-		if (GetActiveState() == (uint8)ESCM_AirMovementStates::Jumping)
-			JumpTime += DeltaTime;		
+		IsGrounded = GroundTrace();	
 	}
 
 	// Called every time the state is changed
-	virtual void OnStateChangedInternal_Implementation(uint8 OldState, uint8 NewState) 
-	{
-		if (NewState == (uint8)ESCM_AirMovementStates::LowerLevel)
-		{
-			GetScarletMovement()->SetDynamicGateNamedValue("CanJump", "Cooldown", false);
-
-			GetScarletMovement()->GetTimerController()->ResetTimer("JumpCooldown");
-			GetScarletMovement()->GetTimerController()->StartTimer("JumpCooldown");
-
-			JumpTime = 0.f;
-		}
-	}
+	virtual void OnStateChangedInternal_Implementation(uint8 OldState, uint8 NewState) {}
 
 	// Returns a pointer to the state that contains the lower level of the movement state machine stack
 	virtual USSM_NestedStateMachineState* GetLowerLayerContainerState_Implementation() { return Cast<USSM_NestedStateMachineState>(GetState((uint8)ESCM_AirMovementStates::LowerLevel)); }
@@ -180,16 +168,7 @@ public:
 	{
 		// Register control parameters here
 		GetScarletMovement()->RegisterFloatParameter("GroundTraceDistance", GroundTraceDistance, true, this, "OnParameterValueChanged");
-		GetScarletMovement()->RegisterFloatParameter("MaxJumpBoostTime", MaxJumpBoostTime, true, this, "OnParameterValueChanged");
-		GetScarletMovement()->RegisterFloatParameter("JumpCoolDown", JumpCoolDown, true, this, "OnParameterValueChanged");
 		// ...
-
-		// Dynamic gates
-		GetScarletMovement()->RegisterDynamicGate("CanJump", ESCM_DynamicGateRule::And, true);
-
-		// Timers
-		GetScarletMovement()->GetTimerController()->CreateTimer("JumpCooldown", JumpCoolDown, false, false);
-		GetScarletMovement()->GetTimerController()->SubscribeToTimer("JumpCooldown", this, "OnJumpCooldownIsOver");
 	}
 
 	UFUNCTION()
@@ -198,20 +177,8 @@ public:
 		// Update control parameter values here
 		if (ParameterName == "GroundTraceDistance")
 			GroundTraceDistance = GetScarletMovement()->GetFloatParameterValue("GroundTraceDistance");
-
-		else if (ParameterName == "MaxJumpBoostTime")
-			MaxJumpBoostTime = GetScarletMovement()->GetFloatParameterValue("MaxJumpBoostTime");
-
-		else if (ParameterName == "JumpCoolDown")
-		{
-			JumpCoolDown = GetScarletMovement()->GetFloatParameterValue("JumpCoolDown");
-			GetScarletMovement()->GetTimerController()->ChangeTimerLength("JumpCoolDown", JumpCoolDown);
-		}
 		// ...
 	}
-
-	UFUNCTION()
-	void OnJumpCooldownIsOver(FName InTimerName) { GetScarletMovement()->SetDynamicGateNamedValue("CanJump", "Cooldown", true); }
 
 	// TRANSITION CONDITIONS
 	// Must be a UFUNCTION, will not work otherwise, and no, it will not crash, you will just be stuck there with no real signs of errors, so yeah
@@ -229,10 +196,14 @@ public:
 
 
 	UFUNCTION()
-	bool Condition_Jumping_Falling() { return (!GetScarletMovement()->GetBoolInputValue("Jump") || JumpTime >= MaxJumpBoostTime) && !IsGrounded; }
+	bool Condition_Jumping_Falling() { return (   !GetScarletMovement()->GetBoolInputValue("Jump") 
+												|| GetScarletMovement()->GetDynamicGateValue("StopJump")) 
+												&& !IsGrounded; }
 
 	UFUNCTION()
-	bool Condition_Jumping_LowerLevel() { return (!GetScarletMovement()->GetBoolInputValue("Jump") || JumpTime >= MaxJumpBoostTime) && IsGrounded; }
+	bool Condition_Jumping_LowerLevel() { return (    !GetScarletMovement()->GetBoolInputValue("Jump") 
+													|| GetScarletMovement()->GetDynamicGateValue("StopJump")) 
+													&& IsGrounded; }
 
 	//...
 };
