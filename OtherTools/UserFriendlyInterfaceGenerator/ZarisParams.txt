@@ -57,6 +57,7 @@ float:JumpZVelocity:750.f
 float:AirControl_Jumping:0.4f
 float:GroundTraceMultiplier_Jumping:0.f
 float:HorizontalVelocityBoostFraction_Jumping:0.5f
+float:ProgressiveJumpMultiplier:0.5f
 float:MovementInputIterpolationSpeed_Jumping:1.f
 float:MaxJumpBoostTime:0.25f
 float:JumpCoolDown:0.2f
