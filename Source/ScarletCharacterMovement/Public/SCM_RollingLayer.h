@@ -32,6 +32,7 @@ class SCARLETCHARACTERMOVEMENT_API USCM_Rolling : public USCM_MovementStateBase
 protected:
 	float CachedGroundFriction = 0.f;
 	float CachedGravityScale = 1.f;
+	FVector CachedInputVector = FVector::ZeroVector;
 
 protected:
 

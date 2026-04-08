@@ -113,13 +113,15 @@ void USCM_Rolling::OnTimerIsOver(FName TimerName)
 
 void USCM_Rolling::StartRoll()
 {
-	FVector BoostVector = GetScarletMovement()->GetRawMovementInputVector() * RollBoost;
+	FVector InputDirection = CachedInputVector;
+
+	FVector BoostVector = InputDirection * RollBoost;
 
 	GetCharacterMovement()->Velocity = GetCharacterMovement()->Velocity * HorizontalVelocityConservation;
 	GetCharacterMovement()->GetCharacterOwner()->LaunchCharacter(BoostVector, false, false);
 
 	// Character rotation
-	FRotator NewRotation = GetScarletMovement()->GetRawMovementInputVector().Rotation();
+	FRotator NewRotation = InputDirection.Rotation();
 	GetCharacterMovement()->GetCharacterOwner()->SetActorRotation(NewRotation);
 
 	// RollDuration -> ... Timer ... -> StopRoll -> ExitState()
@@ -144,6 +146,9 @@ void USCM_Rolling::EnterState_Implementation()
 
 	// Ground trace distance
 	GetScarletMovement()->SetFloatParameterValue("GroundTraceDistance", GetScarletMovement()->GetFloatParameterValue("GroundTraceDistance") * GroundTraceMultiplier);
+
+	// Caching input direction
+	CachedInputVector = GetScarletMovement()->GetRawMovementInputVector();
 
 	// Start rolling
 	// RollDelay -> ... Timer ... -> StartRoll();
