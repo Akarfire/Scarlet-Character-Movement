@@ -43,9 +43,9 @@ void USCM_Vaulting::OnParameterValueChanged(const FName& ParameterName)
 		SM->GetTimerController()->SetTimelinePlaybackSpeed("VaultSnap", VaultingSnapAnimationPlaySpeed);
 	}
 
-	else if (ParameterName == "VaultDuration")
+	else if (ParameterName == "VaultingDuration")
 	{
-		VaultingDuration = SM->GetFloatParameterValue("VaultDuration");
+		VaultingDuration = SM->GetFloatParameterValue("VaultingDuration");
 		SM->GetTimerController()->ChangeTimerLength("VaultDuration", VaultingDuration);
 	}
 }
